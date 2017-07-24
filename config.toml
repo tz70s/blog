@@ -21,10 +21,9 @@ paginate = 10
 
 [params]
   Keywords = ""
-  Description = "Research in Operating System recently"
+  Description = "Interested in Operating System recently"
   Avatar = "img/avatar.jpg"
-  SelfIntro = "Just a worm, seek for true, live in shadow, no more..."
+  SelfIntro = "I don't need no TV screen..."
   Email = "su3g4284zo6y7@gmail.com"
-
   GithubID = "tz70s"
   TwitterID = "tz70s"

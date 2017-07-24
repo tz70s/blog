@@ -9,6 +9,7 @@ draft: false
 microservice 現在算是全世界都想奔往的新系統型態，隨著 docker、kubernetes 等專案的起頭，追求更簡便的管理算是各方都想要的 solution。而 Istio 就是想**解決隨著 microservice 部署的數量成長所增加的複雜度。**
 
 需求：
+
 * Service discovery
 * Load balancing
 * Failure recovery

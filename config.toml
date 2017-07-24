@@ -1,0 +1,30 @@
+baseurl = "https://www.example.com"
+title = "tz70s"
+theme = "vec"
+languageCode = "zh-tw"
+paginate = 10
+
+[menu]
+  # Shown in the side menu.
+  [[menu.main]]
+    name = "post"
+    weight = 0
+    url = "/post"
+  [[menu.main]]
+    name = "about"
+    weight = 1
+    url = "/about"
+  [[menu.main]]
+    name = "contact"
+    weight = 2
+    url = "/contact"
+
+[params]
+  Keywords = ""
+  Description = "Research in Operating System recently"
+  Avatar = "img/avatar.jpg"
+  SelfIntro = "Just a worm, seek for true, live in shadow, no more..."
+  Email = "su3g4284zo6y7@gmail.com"
+
+  GithubID = "tz70s"
+  TwitterID = "tz70s"

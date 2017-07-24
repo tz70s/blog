@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tz70s</title>
+    <link>https://www.example.com/</link>
+    <description>Recent content on tz70s</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-tw</language>
+    <lastBuildDate>Mon, 24 Jul 2017 19:38:22 +0800</lastBuildDate>
+    
+	<atom:link href="https://www.example.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>First Post</title>
+      <link>https://www.example.com/post/first-post/</link>
+      <pubDate>Mon, 24 Jul 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/first-post/</guid>
+      <description>The first post of mine.
+$ echo &amp;quot;123&amp;quot; $ echo $?  </description>
+    </item>
+    
+    <item>
+      <title>Rust 環境建置</title>
+      <link>https://www.example.com/post/rust-env/</link>
+      <pubDate>Wed, 05 Jul 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/rust-env/</guid>
+      <description>最近在學 Rust (蛋疼)，所以把這個開發環境建置紀錄一下。
+首先是用 Visual Studio Code ，這編輯器有多好用就 bj4 了(雖然我打這個 post 是用 vim)。
+Rust 安裝 適用 Linux &amp;amp; Mac OSX
+$ curl https://sh.rustup.rs -sSf | sh  Rustup Rust 編譯器目前有分成三種版本 1. Stable 2. Beta 3. Nightly (Experimental)
+而 Rustup 是用來切換編譯器的。
+RLS VScode 現在有在推行一個叫 Programming Language Server 的東西，主要是把程式語言的處理掛在後端，這樣就可以讓前端(編輯器用接口達到多個支援了)。 而 RLS 就是這樣的一個 Server 。
+VScode 可以用套件安裝。
+Racer racer 是 auto-complete 的核心
+$ cargo install racer  把 source code 撈下來
+$ rustup component add rust-src  現在已經會自動環境變數了，但還是可以加一下(看系統可以加入.</description>
+    </item>
+    
+    <item>
+      <title>Distributed Systems for Fun and Profit</title>
+      <link>https://www.example.com/post/distributed-system/</link>
+      <pubDate>Wed, 07 Jun 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/distributed-system/</guid>
+      <description>Distributed Systems for Fun and Profit 是本分散式系統的書，短小精悍目標是涵蓋所有分散式系統的概念和點出一些關鍵的演算法，然後這是我的筆記。
+Basics 基本電腦系統可以分為兩種 task 需要去完成
+ storage computation  分散式系統的目標是要解決當我們系統 scale up 去處理這些 task ，並且而後發生的種種 trade-off。
+Scalability  is the ability of a system, network, or process, to handle a growing amount of work in a capable manner or its ability to be enlarged to accommodate that growth
+ Growth 可以從很多面向來看，但最重要相關的觀點用以來量測就是performance and availability
+Performance (and latency)  is characterized by the amount of useful work accomplished by a computer system compared to the time and resources used</description>
+    </item>
+    
+    <item>
+      <title>Go &amp; Makefile</title>
+      <link>https://www.example.com/post/go-make/</link>
+      <pubDate>Tue, 06 Jun 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/go-make/</guid>
+      <description>現在還是蠻多專案利用 Makefile 來做 go 的編譯、安裝、測試，由於 go 有 GOPATH 的問題，在設定上如果有用 Makefile 來幫助的話方便許多。
+大致寫法跟以前寫 C/C++ 的 Makefile 沒什麼分別，只是把 gcc, g++ 等編譯器換成 go tool ，如：
+# Set the output file name OUTPUT = gomn # Build binary .PHONY: build build: @go build -o $(OUTPUT) # Install pkg .PHONY: install install: @go install # Clean up .PHONY: clean clean: @if [ -f $(OUTPUT) ]; then rm $(OUTPUT); fi  但有一些有趣的部分，可以 pass variable 到 Go 的 runtime 中，不確定 C/C++ 有沒有，但至少以前沒看過。</description>
+    </item>
+    
+    <item>
+      <title>Git sync upstream</title>
+      <link>https://www.example.com/post/sync-upstream/</link>
+      <pubDate>Sun, 04 Jun 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/sync-upstream/</guid>
+      <description>記一下 git 與 upstream sync 的操作。
+ 查看目前與 remote(upstream) 來源
+git remote -v  預設應該只會有 origin 這個 remote
+origin https://github.com/user/repo.git (fetch) origin https://github.com/user/repo.git (push)  加入 upstream 來源
+$ git remote add upstream https://github.com/otheruser/repo.git # checkout $ git remote -v  切到要更新的 branch
+git checkout master(&amp;lt;branch&amp;gt;)  Pull upstream
+# 順便做 rebase $ git pull --rebase upstream master  更新自己的 remote fork
+$ git push origin master   記錄一下</description>
+    </item>
+    
+    <item>
+      <title>My awesome</title>
+      <link>https://www.example.com/post/learn-note/</link>
+      <pubDate>Sat, 03 Jun 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/learn-note/</guid>
+      <description>最近參考的對岸文件，實在是太神，可以當成 cheat sheet 看。 * Kubernetes 指南 * SDN 指南
+持續記錄</description>
+    </item>
+    
+    <item>
+      <title>Istio 概念</title>
+      <link>https://www.example.com/post/istio/</link>
+      <pubDate>Fri, 02 Jun 2017 19:38:22 +0800</pubDate>
+      
+      <guid>https://www.example.com/post/istio/</guid>
+      <description>Istio 在最近 (5 月底)release 出來了，由 Google, IBM, Lyft 一起發起的 microservice 管理的專案，概念和功能與我之前所想的有所符合，架構也很彈性、完整，所以算是最近準備要 trace 的一個專案，記錄一下之前看官方文件的心得。
+Why Use Istio? microservice 現在算是全世界都想奔往的新系統型態，隨著 docker、kubernetes 等專案的起頭，追求更簡便的管理算是各方都想要的 solution。而 Istio 就是想解決隨著 microservice 部署的數量成長所增加的複雜度。
+需求： * Service discovery * Load balancing * Failure recovery * Metrics * Monitoring * A/B testing * Canary release * Access control
+Architecture Istio Design Goals  Maximize Transparency Incrementality  Policy extension  Protability Policy Uniformity  Traffic management Istio 在處理 traffic management 的概念與 SDN 雷同，分為 Control plane(Istio Manager) 和 Data plane(Envoy Proxy)，於是可以以簡單的 DSL 來去部署想要的 traffic 流向。 這解決了我之前有在想的 service egress 的方式，他可以顯式的轉換每個 service 的出口目標，而不單單只是 ingress，並且以 sidecar 的方式注入 Envoy Proxy，還增進做 failure recovery 和 fault injection 的方便性。</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>https://www.example.com/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.example.com/about/</guid>
+      <description>We are here to help you Are you curious about something? Do you have some kind of problem with our products? As am hastily invited settled at limited civilly fortune me. Really spring in extent an by. Judge but built gay party world. Of so am he remember although required. Bachelor unpacked be advanced at. Confined in declared marianne is vicinity.
+Please feel free to contact us, our customer service center is working for you 24&amp;frasl;7.</description>
+    </item>
+    
+    <item>
+      <title>Contact</title>
+      <link>https://www.example.com/contact/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.example.com/contact/</guid>
+      <description>We are here to help you Are you curious about something? Do you have some kind of problem with our products? As am hastily invited settled at limited civilly fortune me. Really spring in extent an by. Judge but built gay party world. Of so am he remember although required. Bachelor unpacked be advanced at. Confined in declared marianne is vicinity.
+Please feel free to contact us, our customer service center is working for you 24&amp;frasl;7.</description>
+    </item>
+    
+  </channel>
+</rss>

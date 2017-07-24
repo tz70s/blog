@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> Go &amp; Makefile &middot; tz70s </title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.25.1" />
+
+
+<link rel="stylesheet" href="https://www.example.com/css/vec.css">
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+<link href="" rel="alternate" type="application/rss+xml" title="tz70s" />
+
+</head>
+
+<body>
+  <header>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="https://www.example.com">/home/tz70s</a>
+      </li>
+      
+      
+      <li class="pull-left ">
+        <a href="/about">~/about</a>
+      </li>
+      
+      
+      <li class="pull-left ">
+        <a href="/contact">~/contact</a>
+      </li>
+      
+      
+      <li class="pull-left current">
+        <a href="/post">~/post</a>
+      </li>
+      
+  
+      <li class="pull-right"><a href=""><i class="fa fa-rss"></i></a></li>
+    </ul>
+  </nav>
+</header>
+  <div class="content">
+    
+    
+    <section class="post">
+      <h1 class="post-title"><a href="https://www.example.com/post/go-make/">Go &amp; Makefile</a></h1>
+      <span class="post-date">Jun 6, 2017 </span>
+      <div class="post-content">
+        
+
+<p>現在還是蠻多專案利用 Makefile 來做 go 的編譯、安裝、測試，由於 go 有 GOPATH 的問題，在設定上如果有用 Makefile 來幫助的話方便許多。</p>
+
+<p>大致寫法跟以前寫 C/C++ 的 Makefile 沒什麼分別，只是把 gcc, g++ 等編譯器換成 go tool ，如：</p>
+
+<pre><code class="language-makefile"># Set the output file name
+OUTPUT = gomn
+
+# Build binary
+.PHONY: build
+build:
+	@go build -o $(OUTPUT)
+
+# Install pkg
+.PHONY: install
+install:
+	@go install
+
+# Clean up
+.PHONY: clean
+clean:
+	@if [ -f $(OUTPUT) ]; then rm $(OUTPUT); fi
+
+</code></pre>
+
+<p>但有一些有趣的部分，可以 pass variable 到 Go 的 runtime 中，不確定 C/C++ 有沒有，但至少以前沒看過。</p>
+
+<ul>
+<li><strong>Sample Go</strong></li>
+</ul>
+
+<pre><code class="language-go">package main
+
+var (
+    Version string
+    Commit string
+)
+</code></pre>
+
+<p>利用 <code>-ldflags -X</code> 就可以把 variable 傳進去 <code>importpath.name=value</code>
+* <strong>Sample Makefile</strong></p>
+
+<pre><code class="language-makefile">
+# Set the output file name
+OUTPUT = gomn
+
+VERSION = 1.0.0
+COMMIT = First build
+
+# Set LDFLAGS
+LDFLAGS = -ldflags &quot;-X main.Version=$(VERSION) -X main.Commit=$(COMMIT)&quot;
+
+# Build binary
+.PHONY: build
+build:
+	@go build $(LDFLAGS) -o $(OUTPUT)
+
+# Install pkg
+.PHONY: install
+install:
+	@go install
+
+# Clean up
+.PHONY: clean
+clean:
+	@if [ -f $(OUTPUT) ]; then rm $(OUTPUT); fi
+
+</code></pre>
+
+<p>然後 markdown 也有 <code>makefile</code> 的 syntax highlight!</p>
+
+<h2 id="挺神奇的">挺神奇的</h2>
+
+<p><strong>記錄一下</strong></p>
+
+      </div>
+    </section>
+    
+    <section class="pagination clearfix">
+      
+      <a class="btn previous " href="https://www.example.com/post/sync-upstream/"> Git sync upstream </a> 
+       
+      
+      <a class="btn next " href="https://www.example.com/post/distributed-system/"> Distributed Systems for Fun and Profit </a> 
+      
+    </section>
+    
+    
+  </div>
+  
+  <footer>
+  <div class="footer-info">
+    <p>
+      <a href="mailto:su3g4284zo6y7@gmail.com?subject="><i class="fa fa-envelope-o"></i> su3g4284zo6y7@gmail.com </a>
+      {
+        <a href="https://gohugo.io/" title="Hugo :: A fast and modern static website engine">Hugo 0.25.1</a>,
+        <a href="https://github.com/IvanChou/yii.im" title="vec">Vec</a> 
+      }
+      {<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="CC BY-NC-ND 3.0">CC BY-NC-ND 3.0</a>}
+    </p>
+  </div>
+</footer>
+  
+  <script src="https://www.example.com/js/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+  </script>
+  
+
+</body>
+
+</html>

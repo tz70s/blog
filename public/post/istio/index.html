@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> Istio 概念 &middot; tz70s </title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.25.1" />
+
+
+<link rel="stylesheet" href="https://www.example.com/css/vec.css">
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+<link href="" rel="alternate" type="application/rss+xml" title="tz70s" />
+
+</head>
+
+<body>
+  <header>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="https://www.example.com">/home/tz70s</a>
+      </li>
+      
+      
+      <li class="pull-left ">
+        <a href="/about">~/about</a>
+      </li>
+      
+      
+      <li class="pull-left ">
+        <a href="/contact">~/contact</a>
+      </li>
+      
+      
+      <li class="pull-left current">
+        <a href="/post">~/post</a>
+      </li>
+      
+  
+      <li class="pull-right"><a href=""><i class="fa fa-rss"></i></a></li>
+    </ul>
+  </nav>
+</header>
+  <div class="content">
+    
+    
+    <section class="post">
+      <h1 class="post-title"><a href="https://www.example.com/post/istio/">Istio 概念</a></h1>
+      <span class="post-date">Jun 2, 2017 </span>
+      <div class="post-content">
+        
+
+<p><a href="https://istio.io">Istio</a> 在最近 (5 月底)release 出來了，由 Google, IBM, Lyft 一起發起的 microservice 管理的專案，概念和功能與我之前所想的有所符合，架構也很彈性、完整，所以算是最近準備要 trace 的一個專案，記錄一下之前看官方文件的心得。</p>
+
+<h2 id="why-use-istio">Why Use Istio?</h2>
+
+<p>microservice 現在算是全世界都想奔往的新系統型態，隨著 docker、kubernetes 等專案的起頭，追求更簡便的管理算是各方都想要的 solution。而 Istio 就是想<strong>解決隨著 microservice 部署的數量成長所增加的複雜度。</strong></p>
+
+<p>需求：
+* Service discovery
+* Load balancing
+* Failure recovery
+* Metrics
+* Monitoring
+* A/B testing
+* Canary release
+* Access control</p>
+
+<h2 id="architecture">Architecture</h2>
+
+<p><img src = "https://istio.io/docs/concepts/what-is-istio/img/architecture/arch.svg" width="400px"></p>
+
+<h2 id="istio-design-goals">Istio Design Goals</h2>
+
+<ol>
+<li>Maximize Transparency</li>
+<li>Incrementality
+
+<ul>
+<li>Policy extension</li>
+</ul></li>
+<li>Protability</li>
+<li>Policy Uniformity</li>
+</ol>
+
+<h2 id="traffic-management">Traffic management</h2>
+
+<p>Istio 在處理 traffic management 的概念與 SDN 雷同，分為 Control plane(Istio Manager) 和 Data plane(Envoy Proxy)，於是可以以簡單的 DSL 來去部署想要的 traffic 流向。
+這解決了我之前有在想的 service egress 的方式，他可以<strong>顯式</strong>的轉換每個 service 的出口目標，而不單單只是 ingress，並且以 sidecar 的方式注入 Envoy Proxy，還增進做 failure recovery 和 fault injection 的方便性。</p>
+
+<p>算是跟我之前做的垃圾概念一樣 - <a href="https://github.com/tz70s/kubernetes-fault-injector">kube fault injector</a></p>
+
+<h2 id="istio-manager">Istio Manager</h2>
+
+<h2 id="request-routing">Request Routing</h2>
+
+<h3 id="service-model">Service Model</h3>
+
+<p>由於 Istio 只關注在 Service 管理的層級，所以他還是必須要有 underlying 的 orchestration platform，如 Kubernetes, Mesos(目前只有支援 Kubernetes)。只不過在設計原則上，盡可能是與 underlying platform 獨立的，以達到 portability。</p>
+
+<h3 id="service-versions">Service Versions</h3>
+
+<p>API version 或 envrionment(stage, prod) 在 istio 是可以在設定的 DSL 寫入的，這可以讓 routing rules 設定在不同的 service version 上，簡化了 A/B tests 或 Canary rollouts。</p>
+
+      </div>
+    </section>
+    
+    <section class="pagination clearfix">
+       
+      
+      <a class="btn next " href="https://www.example.com/post/learn-note/"> My awesome </a> 
+      
+    </section>
+    
+    
+  </div>
+  
+  <footer>
+  <div class="footer-info">
+    <p>
+      <a href="mailto:su3g4284zo6y7@gmail.com?subject="><i class="fa fa-envelope-o"></i> su3g4284zo6y7@gmail.com </a>
+      {
+        <a href="https://gohugo.io/" title="Hugo :: A fast and modern static website engine">Hugo 0.25.1</a>,
+        <a href="https://github.com/IvanChou/yii.im" title="vec">Vec</a> 
+      }
+      {<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="CC BY-NC-ND 3.0">CC BY-NC-ND 3.0</a>}
+    </p>
+  </div>
+</footer>
+  
+  <script src="https://www.example.com/js/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+  </script>
+  
+
+</body>
+
+</html>

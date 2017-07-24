@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> Git sync upstream &middot; tz70s </title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.25.1" />
+
+
+<link rel="stylesheet" href="https://www.example.com/css/vec.css">
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+<link href="" rel="alternate" type="application/rss+xml" title="tz70s" />
+
+</head>
+
+<body>
+  <header>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="https://www.example.com">/home/tz70s</a>
+      </li>
+      
+      
+      <li class="pull-left ">
+        <a href="/about">~/about</a>
+      </li>
+      
+      
+      <li class="pull-left ">
+        <a href="/contact">~/contact</a>
+      </li>
+      
+      
+      <li class="pull-left current">
+        <a href="/post">~/post</a>
+      </li>
+      
+  
+      <li class="pull-right"><a href=""><i class="fa fa-rss"></i></a></li>
+    </ul>
+  </nav>
+</header>
+  <div class="content">
+    
+    
+    <section class="post">
+      <h1 class="post-title"><a href="https://www.example.com/post/sync-upstream/">Git sync upstream</a></h1>
+      <span class="post-date">Jun 4, 2017 </span>
+      <div class="post-content">
+        <p>記一下 git 與 upstream sync 的操作。</p>
+
+<ol>
+<li><p>查看目前與 remote(upstream) 來源</p>
+
+<pre><code class="language-bash">git remote -v
+</code></pre></li>
+
+<li><p>預設應該只會有 origin 這個 remote</p>
+
+<pre><code class="language-bash">origin https://github.com/user/repo.git (fetch)
+origin https://github.com/user/repo.git (push)
+</code></pre></li>
+
+<li><p>加入 upstream 來源</p>
+
+<pre><code class="language-bash">$ git remote add upstream https://github.com/otheruser/repo.git
+# checkout
+$ git remote -v
+</code></pre></li>
+
+<li><p>切到要更新的 branch</p>
+
+<pre><code class="language-bash">git checkout master(&lt;branch&gt;)
+</code></pre></li>
+
+<li><p>Pull upstream</p>
+
+<pre><code class="language-bash"># 順便做 rebase
+$ git pull --rebase upstream master
+</code></pre></li>
+
+<li><p>更新自己的 remote fork</p>
+
+<pre><code class="language-bash">$ git push origin master
+</code></pre></li>
+</ol>
+
+<p><strong>記錄一下</strong></p>
+
+      </div>
+    </section>
+    
+    <section class="pagination clearfix">
+      
+      <a class="btn previous " href="https://www.example.com/post/learn-note/"> My awesome </a> 
+       
+      
+      <a class="btn next " href="https://www.example.com/post/go-make/"> Go &amp; Makefile </a> 
+      
+    </section>
+    
+    
+  </div>
+  
+  <footer>
+  <div class="footer-info">
+    <p>
+      <a href="mailto:su3g4284zo6y7@gmail.com?subject="><i class="fa fa-envelope-o"></i> su3g4284zo6y7@gmail.com </a>
+      {
+        <a href="https://gohugo.io/" title="Hugo :: A fast and modern static website engine">Hugo 0.25.1</a>,
+        <a href="https://github.com/IvanChou/yii.im" title="vec">Vec</a> 
+      }
+      {<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/" title="CC BY-NC-ND 3.0">CC BY-NC-ND 3.0</a>}
+    </p>
+  </div>
+</footer>
+  
+  <script src="https://www.example.com/js/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+  </script>
+  
+
+</body>
+
+</html>

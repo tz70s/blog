@@ -1,2 +1,1 @@
-# tz70s.github.io
-my personal blog
+my personal blog generator

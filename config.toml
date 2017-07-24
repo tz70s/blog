@@ -1,4 +1,4 @@
-baseurl = "https://tz70s.github.io/"
+baseurl = "https://www.example.com"
 title = "tz70s"
 theme = "vec"
 languageCode = "zh-tw"

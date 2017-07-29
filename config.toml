@@ -11,13 +11,9 @@ paginate = 10
     weight = 0
     url = "/post"
   [[menu.main]]
-    name = "about"
+    name = "about/me"
     weight = 1
     url = "/about"
-  [[menu.main]]
-    name = "contact"
-    weight = 2
-    url = "/contact"
 
 [params]
   Keywords = ""

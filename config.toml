@@ -1,45 +1,57 @@
-baseurl = "https://tz70s.github.io"
-DefaultContentLanguage = "en"
-title = "I"
-theme = "beautifulhugo"
-metaDataFormat = "yaml"
-pygmentsUseClasses = true
-pygmentCodeFences = true
+baseURL = "https://tz70s.github.io"
+languageCode = "en-us"
+title = "home-stay punk forever"
+theme = "coder"
 
-[Params]
-  subtitle = "Learn Rust recently"
-  logo = "img/avatar.jpg"
-  favicon = "img/favicon.ico"
-  dateFormat = "January 2, 2006"
-  commit = false
-  comments = true
+paginate = 20 # Default number of pages per page in pagination.
+canonifyurls = true # Enable to turn relative URLs into absolute.
 
-#[[Params.bigimg]]
-#  src = "img/triangle.jpg"
-#  desc = "Triangle"
-#[[Params.bigimg]]
-#  src = "img/sphere.jpg"
-#  desc = "Sphere"
-#[[Params.bigimg]]
-#  src = "img/hexagon.jpg"
-#  desc = "Hexagon"
+pygmentsstyle = "b2" # Color-theme or style for syntax highlighting.
+pygmentscodefences = true # Enable code fence background highlighting.
+pygmentscodefencesguesssyntax = true # Enable syntax guessing for code fences without specified language.
 
-[Author]
-  name = "tz70s"
-  email = "su3g4284zo6y7@gmail.com"
-  github = "tz70s"
-  twitter = "tz70s"
-  linkedin = "tz70s"
-  instagram = "tzch1ao"
-  soundcloud = "TzuChiaoYeh"
+[params]
+  author = "Tzu-Chiao Yeh" # Author's name.
+  info = "neet" # Author's job title or info.
+  description = "" # Site description.
+  keywords = "blog,developer,personal" # Site keywords.
+  avatarurl = "images/profile.jpg" # Contain the path of the optionnal avatar in the static folder.
 
+  footercontent = "" # Add footer content
+
+  # Whether you want to hide copyright and credits in the footer.
+  hideCredits = true
+  hideCopyright = true
+
+  # Custom CSS
+  custom_css = []
+
+  # RTL support
+  rtl = false
+
+  # Multilanguage mode
+  langseparator = "|"
+
+# Social links
+[[params.social]]
+    name = "Github"
+    weight = 1
+    url = "https://github.com/tz70s/"
+[[params.social]]
+    name = "Twitter"
+    weight = 2
+    url = "https://twitter.com/tz70s/"
+[[params.social]]
+    name = "LinkedIn"
+    weight = 3
+    url = "https://www.linkedin.com/in/tzu-chiao-yeh-193697103/"
+
+# Menu links
 [[menu.main]]
     name = "Blog"
-    url = ""
     weight = 1
-
+    url  = "/posts/"
 [[menu.main]]
     name = "About"
-    url = "about"
-    weight = 3
-
+    weight = 2
+    url = "/about/"

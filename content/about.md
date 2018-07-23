@@ -1,8 +1,13 @@
 +++
-title = "About"
-id = "about"
+title = "About me"
+slug = "about"
 +++
 
-Hi, I'm Tzu-Chiao Yeh!
+Hack on distributed system.
 
+## Interests
 
+* Scala
+* Akka
+* Scala.js
+* Openwhisk

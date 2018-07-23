@@ -1,8 +1,11 @@
----
-title: "Distributed Systems for Fun and Profit"
-date: 2017-06-07T19:38:22+08:00
-draft: false
----
++++
+title = "Distributed Systems for Fun and Profit"
+date = "2017-06-07"
+slug = "distributed-systems-for-fun-and-profit" 
+tags = []
+categories = []
++++
+
 [Distributed Systems for Fun and Profit](http://book.mixu.net/distsys/) 是本分散式系統的書，短小精悍目標是涵蓋所有分散式系統的概念和點出一些關鍵的演算法，然後這是我的筆記。
 
 ## Basics

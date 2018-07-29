@@ -87,7 +87,7 @@ type SuspendResumeOps interface {
 
 2. Health check and states report, via route: 
 
-GET _http://whisk.agent.host>/health_
+GET _http://whisk.agent.host/health_
 
 This will return a list of current states of containers.
 

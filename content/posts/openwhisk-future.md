@@ -77,13 +77,7 @@ These operations are all done by HTTP routes; but not enough here. We should fur
 Overall, adjust these into extended functionalities:
 
 1. Extended suspend/resume implementation.
-```Go
-// Interface for polymorphic supports either docker suspend/resume or runc-based.
-type SuspendResumeOps interface {
-	Suspend(w http.ResponseWriter, r *http.Request)
-	Resume(w http.ResponseWriter, r *http.Request)
-}
-```
+<script src="https://gist.github.com/tz70s/42d023beb999ca7bcbb614065d48bf8f.js"></script>
 
 2. Health check and states report, via route: 
 
@@ -114,17 +108,4 @@ The protocol between Controller and WhiskScheduler.
 
 In order to maximize performance, the container creation/deletion protocol is implemented via akka message passing. Protocol can be looked like this:
 
-```Scala
-object ContainerFactoryProtocol {
-
-  /** Wraps an endpoint of container that controller can directly achieve. */
-  case class ContainerEndpoint(id: ContainerId, address: ContainerAddress)
-
-  /** Request a container with activation message for a more sophisticated decision. */
-  case class RequestContainer(activeMsg: ActivationMessage)
-
-  /** Return a list of warmed containers to a specific controller */
-  case class ResponseContainerList(list: List[Container])
-}
-```
-
+<script src="https://gist.github.com/tz70s/a15c32c59f17b3f4034275566484759c.js"></script>

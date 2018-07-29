@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm -rf public/*
 hugo
 git add .
 git commit -m "New blog post"

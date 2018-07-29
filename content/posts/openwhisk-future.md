@@ -54,17 +54,23 @@ Regardless which one to be reused, WhiskAgent is not the main target I'm going t
 
 Basic functionalities of WhiskAgent:
 
-1. Pause: pause a specific container. 
+1. Suspend: suspend/pause a specific container. 
   
-GET  _http://whisk.agent.host/pause/container_
+GET  _http://whisk.agent.host/suspend/container_
+
+Will return status 204 on success and 500 on failure.
 
 2. Resume: resume a specific container.
 
 GET  _http://whisk.agent.host/resume/container_
 
+Will return status 204 on success and 500 on failure.
+
 3. Log: read container logs and collect to a log sink file, and return back with JSON structure.
 
 GET _http://whisk.agent.host/log/container_
+
+Will return status 204 on success, 500 on general failure and 400 on log parsing failure.
 
 These operations are all done by HTTP routes; but not enough here. We should further support some health check with either container manager or controllers. Further, the original pause/resume only implemented via docker commands, with poor performance. Same as docker usage in original Invoker docker implementation, we need the optimization by using runc here.
 

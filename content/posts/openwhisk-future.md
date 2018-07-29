@@ -85,22 +85,38 @@ GET _http://whisk.agent.host/health_
 
 This will return a list of current states of containers.
 
+_REMARK_: this is not neccessary, since we can check this via remote docker rest calls.
+
 ## Whisk Scheduler
 
-WIP
+The WhiskScheduler is responsible for handling controller resource requisitions, monitoring and (partially) mangaging containers' lifecycle. 
+In the overall design, it's similar to most logic from prior Invoker, but without pause/resume operations.
+As I mentioned, I didn't deal this with Kubernetes. However, the approach may be similar and even simpler.
 
 ### Whisk Agent Proxy
 
 The WhiskAgentProxy is an actor which similar to original InvokerSupervision in loadbalancer. But we move this here.
+But the internal jobs are totally different, since we can **check the health state via docker/kubernetes**, instead of ping/pong via customized protocol (handshake above kafka, previously). In other words, we can monitor nodes health via Kubernetes (simple!); and we can get a live lists of running/non-running container states from docker daemon hence ensure the node is up.
+
+The approach will be distincted by two orchestration choices: Kubernetes and Native (Docker).
+
+1. **Kubernetes**:
+Basically, we just call kubernetes api server with 1 to 1 mapping, it'll deal with all scheduling, health check and so on. Hence, WhiskAgentProxy has only one instance, in this case.
+
+2. **Native(Docker)**:
+Contrast to indirectly calls in Kubernetes, in the native way, we'll have to deal everything by us. Quite similar to InvokerSupervision approach, the WhiskAgentProxy will have M to M supervision, but checking liveness via docker daemon checks.
+
+Here's the signature and protocols in Native approach, full code can be found at [here]()
+
+### Whisk Scheduling
+
+Cutting logics from ShardingLoadBalancer, with simple sharding mechanism.
+
 WIP
 
 ## Controller
 
 WIP
-
-## Protocols
-
-In this section, we'll discuss the internal protocol design in the new architecture.
 
 ### Container Factory Protocol
 
@@ -109,3 +125,17 @@ The protocol between Controller and WhiskScheduler.
 In order to maximize performance, the container creation/deletion protocol is implemented via akka message passing. Protocol can be looked like this:
 
 <script src="https://gist.github.com/tz70s/a15c32c59f17b3f4034275566484759c.js"></script>
+
+## Benchmarking & Profiling
+
+WIP
+
+## Conclusion
+
+WIP
+
+## Feedback to Community
+
+WIP
+
+## GSOC Conclusion

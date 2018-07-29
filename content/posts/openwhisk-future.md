@@ -40,14 +40,22 @@ For cleaner naming convention, I've renamed some words from proposal, here's the
 1. Container Management Agent -> WhiskAgent
 2. Container Manager -> WhiskScheduler
 
-## WhiskAgent
+## Whisk Agent
 
-Previous at Kubernetes deployment, already has an invoker-agent do some similar things (pause, resume and log); and currently works fine for me with some basic refactoring. However, this may not be suitable to OpenWhisk requirements.
+Previous at Kubernetes deployment, already has an invoker-agent do some similar things (pause, resume and log); and currently works fine for me with some basic refactoring. 
+
+However, this may not be suitable to OpenWhisk requirements: 
+
+1. One siginificant bottleneck and many folks concerned: activation log. We already had plenty of log store implementation, i.e. elasticsearch, etc. In general, we should not pass back logs from whisk agent back to either Controller or Whisk Scheduler, instead, directly store activation log into log store. Therefore, we can and we should reuse the codebase from implemented log store.
+
+2. Better integration: go has it's own workspace and directory convention ($GOPATH). It's neccessary if need a mature dependency management, i.e. dep. By convention, we might locate it into some kind of path: _github.com/apache/incubator-openwhisk-whisk-agent_; but this definitely makes the project fractionized. Therefore, I vote for using scala-based implementation on WhiskAgent.
+
+Regardless which one to be reused, WhiskAgent is not the main target I'm going to verify it. Use it fine here, currently.
 
 Basic functionalities of WhiskAgent:
 
-1. Pause: pause a specific container.
-2. Resume: resume a specific container.
+1. Pause: pause a specific container. `http://<whisk_agent_host>/pause/<container>`
+2. Resume: resume a specific container. `http://<whisk_agent_host>/resume/<container>`
 3. Log: read container logs and collect to a log sink file, and return back with JSON structure.
 
 These operations are all done by HTTP routes; but not enough here. We should further support some health check with either container manager or controllers. Further, the original pause/resume only implemented via docker commands, with poor performance. Same as docker usage in original Invoker docker implementation, we need the optimization by using runc here.
@@ -66,11 +74,11 @@ type SuspendResumeOps interface {
 2. Health check and states report, via route: http://<whisk_agent_host>/health
 This will return a list of current states of containers.
 
-## WhiskScheduler
+## Whisk Scheduler
 
 WIP
 
-### WhiskAgentProxy
+### Whisk Agent Proxy
 
 The WhiskAgentProxy is an actor which similar to original InvokerSupervision in loadbalancer. But we move this here.
 WIP
@@ -81,7 +89,9 @@ WIP
 
 ## Protocols
 
-### Resource Requisition: Controller - WhiskScheduler
+### Container Factory Protocol
+
+Protocol between Controller and WhiskScheduler.
 
 In order to maximize performance, the container creation/deletion protocol is implemented via akka message passing. Protocol can be looked like this:
 

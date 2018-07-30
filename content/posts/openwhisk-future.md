@@ -30,17 +30,20 @@ The [Future Architecture proposal](https://cwiki.apache.org/confluence/display/O
 
 ## Steps to produce
 
-Instead of prototyping from clean slate, I like more to establish from current codebase. It's quite more challenged, but take more advantages:
+Instead of prototyping from clean slate, it's quite more challenged established via current codebase, but take more advantages:
 
 1. More accurate comparison on performance and architecture.
 2. Help to explore the migration path.
 3. Help me to better understanding on OpenWhisk internal implementation.
 
+However, OpenWhisk already provides nice infrastructure and utilities that I can easier to migrate this. As I mentioned, one of targets on this experiment can help to figure out the smooth migration path to future architecture. I've tried my best not to break up current codebase and kept rebase it from upstream. 
+
 The prototyping steps as follow:
 
-1. Cutting off invoker into container-manager and container-manager-agent.
-2. Move some logics (sharding scheduler) from loadbalancer into container-manager.
-3. Implement required changes.
+1. A New LoadBalancer SPI: SingletonLoadBalancer (which adapt with Container Manager)
+2. Duplicate and cutting off logics from Invoker into new Container Manager.
+3. Re-use and refactor invoker-agent which is used by Kubernetes deployment.
+4. Implement required changes.
 
 I'll discuss these in detail below.
 

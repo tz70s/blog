@@ -24,13 +24,6 @@ This objectives of this post and protoype:
 
 This will be my final result during the GSoC progress. I'll describe my exprience in the bottom or maybe another post.
 
-Something will not be included in this post and experiment:
-
-* Kubernetes: I only do prototyping for native (docker) side.
-* Throttling and Logging.
-* ContainerManager backup.
-* Performance optimization on message queue.
-
 ## Architecture recap
 
 The [Future Architecture proposal](https://cwiki.apache.org/confluence/display/OPENWHISK/OpenWhisk+future+architecture) proposed by Markus Thommes integrated lots of communities' idea; play a great start to a new performant architecture.
@@ -96,8 +89,6 @@ Extended suspend/resume implementation.
 
 <script src="https://gist.github.com/tz70s/42d023beb999ca7bcbb614065d48bf8f.js"></script>
 
-<script src="https://gist.github.com/tz70s/f8d353c54f876735d039755ac08df3ab.js"></script>
-
 That's all, there's only small changed from previous version; for more implementation detial, you can refer to [this branch](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent).
 
 ## Whisk Scheduler
@@ -148,6 +139,14 @@ WIP
 WIP
 
 ## Conclusion
+
+Something didn't implement/discuss in this post and experiment:
+
+* Kubernetes: I only do prototyping for native (docker) side.
+* Throttling and Logging.
+* ContainerManager backup.
+* Performance optimization on message queue.
+* Comprehensive tests.
 
 WIP
 

@@ -36,13 +36,13 @@ Instead of prototyping from clean slate, it's quite more challenged established 
 2. Help to explore the migration path.
 3. Help me to better understanding on OpenWhisk internal implementation.
 
-However, OpenWhisk already provides nice infrastructure and utilities that I can easier to migrate this. As I mentioned, one of targets on this experiment can help to figure out the smooth migration path to future architecture. I've tried my best not to break up current codebase and kept rebase it from upstream. 
+However, OpenWhisk already provides nice infrastructure and utilities that I can easier to migrate this. As I mentioned, one of targets on this experiment can help to figure out the smooth migration path to future architecture. I've tried my best not to break up current codebase and kept rebase it with upstream. 
 
 The prototyping steps as follow:
 
 1. A New LoadBalancer SPI: SingletonLoadBalancer (which adapt with Container Manager)
-2. Duplicate and cutting off logics from Invoker into new Container Manager.
-3. Re-use and refactor invoker-agent which is used by Kubernetes deployment.
+2. Duplicate and cut off logics from Invoker into new Container Manager.
+3. Re-use and refactor invoker-agent which is used by Kubernetes deployment. (contains some breaking changes, but I think it can also improve current kube deployment)
 4. Implement required changes.
 
 I'll discuss these in detail below.

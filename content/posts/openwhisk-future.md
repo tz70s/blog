@@ -92,6 +92,8 @@ Extended suspend/resume implementation.
 
 <script src="https://gist.github.com/tz70s/42d023beb999ca7bcbb614065d48bf8f.js"></script>
 
+<script src="https://gist.github.com/tz70s/f8d353c54f876735d039755ac08df3ab.js"></script>
+
 That's all, there's only small changed from previous version; for more implementation detial, you can refer to [this branch](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent).
 
 ## Whisk Scheduler

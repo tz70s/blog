@@ -135,6 +135,14 @@ In order to maximize performance, the container creation/deletion protocol is im
 
 <script src="https://gist.github.com/tz70s/a15c32c59f17b3f4034275566484759c.js"></script>
 
+To guarantee strong consistency for container selection in controller. The scheduler will be (contains) a cluster singleton to resolve container selection. [Akka cluster singleton](https://doc.akka.io/docs/akka/2.5.14/cluster-singleton.html) is introduced here: ClusterSingletonManager will sits in Scheduler and ClusterSingletonProxy will sit in both Controller and Scheduler to access the singleton. You can checkout the doc for usage and [here's my example with less noise](https://github.com/tz70s/cluster-singleton-ex) compared to Akka provided, which contains a basic singleton and proxy setup with migration observation guide.
+
+There might be two potential problems on using cluster singleton:
+
+1. Perfromance bottleneck: **WIP**
+
+2. Single point of failure: akka cluster singleton will automatically migrate to another scheduler node (actor-system) once the leader (oldest) getting down. This will result in short downtime, but it can be afford to us however, the ClusterSingletonProxy will buffer messages until the new singleton is up; the latency is overall make sense b.c. this is not actually the performance critical path. A more serious problem is how do we persistent singleton states: **WIP**
+
 ## Demo
 
 WIP
@@ -148,11 +156,9 @@ WIP
 Something didn't implement/discuss in this post and experiment:
 
 * Kubernetes: I only do prototyping for native (docker) side.
-* Throttling.
 * Logging.
-* Scheduler backup.
 * Performance optimization on message queue.
-* Comprehensive tests.
+* Tests.
 
 WIP
 

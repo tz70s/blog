@@ -125,7 +125,22 @@ WIP
 
 ## Controller
 
-WIP
+Most of Controller logic and programming semantics will not be changed, except for LoadBlancer. I've created a new LoadBalancer implementation in [future package]() and can be simply loaded with SPI infra.
+
+The overall LoadBalancer design:
+
+圖
+
+In words, the rough workflow:
+
+1. Call publish activation
+2. Check if there's a warmed action existed, by looking up local container list.
+3. If yes and if it's belong to owned, http call for it. Else, redirect to another container with carrying http client context.
+4. If not, first put the activation in the overflow queue.
+5. Request for new resource, via proxy actor to Scheduler singleton.
+6. After scheduler singleton's response arrived, update local container list (which generated via scheduler). **In case of guarantee consistent visibility, scheduler will make sure that all container lists are synchronized. ??**
+7. If it's belong to owned, http call for it. Else, redirect to another container with carrying http client context.
+
 
 ### Container Factory Protocol
 

@@ -88,15 +88,15 @@ What about the number of Controller will receive the updates once Scheduler deci
 
 In Kubernetes network model, the ip-per-pod model is flattened and we can easily work without this problem. But to the native mode, the warmed containers required some mechanisms to resolve with NAT environment.
 
-There are two potential ways:
+There are some potential ways:
 
 1. Use InvokerAgent as a reverse proxy: this will take some additional benefits => reduce the calls after pause/resume, since Controller will no longer managed any Container's lifecycle. However, this is quite similar to prior Invoker, may gain some latency here.
 
 2. Forced user to use somewhat overlay/underlay network policy, to reach a similar model in Kube.
 
-3. Port-mapping once creation.
+3. Port-forwarding once creation.
 
-Obviously, we can only pick solution 1 and 3. I choose 3 from now.
+Obviously, it's arbitrary and not applicable for option 2. I choose 3 from now.
 
 **How do we deal with overflow messages?**
 

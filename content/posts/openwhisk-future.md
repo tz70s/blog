@@ -124,7 +124,7 @@ There might be two potential problems on using cluster singleton:
 
 2. Single point of failure: akka cluster singleton will automatically migrate to another scheduler node (actor-system) once the leader (oldest) getting down. This will result in short downtime, but it can be afford to us however, the ClusterSingletonProxy will buffer messages until the new singleton is up; the latency is overall make sense b.c. this is not actually the performance critical path. A more serious problem is how do we persistent singleton states: **WIP**
 
-### Invoker Agent Proxy
+### Container Lifecycle Management
 
 The InvokerAgentProxy is an actor which similar to original InvokerSupervision in loadbalancer and we move this here.
 But the internal jobs are totally different, since we can **check the health state via docker/kubernetes**, instead of ping/pong via customized protocol (handshake above kafka, previously). In other words, we can monitor nodes health via Kubernetes (simple!); and we can get a live lists of running/non-running container states from docker daemon hence ensuring the node is up.
@@ -138,6 +138,12 @@ Basically, we just call kubernetes api server with 1 to 1 mapping, it'll deal wi
 Contrast to indirectly calls in Kubernetes, in the native way, we'll have to deal everything by us. Quite similar to InvokerSupervision approach, the InvokerAgentProxy will have M to M supervision, but checking liveness via docker daemon checks.
 
 Here's the signature and protocols in Native approach, full code can be found at [here]()
+
+### Scheduling Strategy
+
+Cutting logics from ShardingLoadBalancer, with simple sharding mechanism.
+
+WIP
 
 ## Invoker Agent
 
@@ -183,13 +189,6 @@ Extended suspend/resume implementation.
 
 That's all, there's only small changed from previous version; for more implementation detial, you can refer to [this branch](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent).
 
-### Scheduling Strategy
-
-Cutting logics from ShardingLoadBalancer, with simple sharding mechanism.
-
-WIP
-
-
 ## Demo
 
 WIP
@@ -206,10 +205,6 @@ Something didn't implement/discuss in this post and experiment:
 * Logging.
 * Performance optimization on message queue.
 * Tests.
-
-WIP
-
-## Feedback to Community
 
 WIP
 

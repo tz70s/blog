@@ -70,23 +70,23 @@ In words, the roughly workflow as following:
 
 The code module contains:
 
-#### SingletonLoadBalancer
+#### Singleton LoadBalancer
 
 SingletonLoadBalancer implements LoadBalancer trait for SPI infra. Contrast to prior ShardingContainerLoadBalancer, we'll contain nothing about scheduling logic; it'll simply look up and pass requests. When a request come in, it'll lookup container lists, which contains some context related to container and in-flight concurrent requests. There will be some larger value once concurrent activation processing got finished, but current, the in-flight concurrent request can be only 0 or 1. That is, if a request reach 0 concurrency value, it reuse the existed free container and send request into ContainerProxy, or else, it'll send message to OverflowProxy for resource requisition.
 
 <script src="https://gist.github.com/tz70s/1223bdb0e61543ece861e306c9fb50ca.js"></script>
 
-#### OverflowProxy
+#### Overflow Proxy
 
 Once OverflowProxy get message, it'll queue into Overflow Buffer. I didn't take external shared queue here, which many folks may concerned. But for Controller HA mode, it'll be required and can open up work-stealing capability. Anyway, the current implementation when receiving OverflowActivationMessage, queue in OverflowBuffer with some sendor and tracing context, and proxy to SingletonScheduler; and once it gets back with ContainerAllocation message, it'll pipe back to SingletonLoadBalancer.
 
-#### ContainerProxy
+#### Container Proxy
 
 ContainerProxy is similar to prior invoke one, but I'll only manage with Suspend/Resume states and face to a warmed container. Therefore, the mission on ContainerProxy will operate suspend/resume (depends on pauseGrace settings) and call /run route of containers. Finally, pipe back result to SingletonLoadBalancer.
 
 I've done this via Akka FSM module as previous did. There might be unreliable and not performant (i.e. use pause/unpause to avoid causing terminated when handling requests, or we need to introduce some synchronized value here); but using actor and FSM is nice here that we can hold states for remote containers.
 
-#### ShareStatesProxy
+#### ShareStates Proxy
 
 Concerned some proposal didn't mention, the real Scheduling algorithm; We don't have any workload-dispatch related logics in Controller side, and make Scheduler holds all logics. However, what states Scheduler should know?
 
@@ -96,6 +96,14 @@ Consider building the prior busy/free/prewarmed pooling model:
 * How do we know that which Container is safe to delete and notify deletion?
 
 ShareStatesProxy do this: when Container gets pause/suspend, it'll notify Scheduler that container is busy or free. Once a deletion is being taken, it'll choose up from free pool (see more in Scheduler section) and notify back with ShareStatesProxy. Hence, ShareStatesProxy take an eval sharable container lists (actually a TrieMap) for updating and sharing with main SingletonLoadBalancer.
+
+#### Container Factory Protocol
+
+Overall for interacting with Scheduler, the messages between Controller and Scheduler. You can see that the relations between Controller and Scheduler.
+
+In convenient, I've used Akka message passing, but this might not be ideal.
+
+<script src="https://gist.github.com/tz70s/a15c32c59f17b3f4034275566484759c.js"></script>
 
 There's still some problems on the design and implementation above, and we'll have to dig this with more detail:
 
@@ -135,13 +143,6 @@ The Scheduler is responsible for handling controller resource requisitions, moni
 In the overall design, it's similar to most logic from prior Invoker, but without pause/resume operations.
 As I mentioned, I didn't deal this with Kubernetes. However, the approach may be similar and much simpler. Further, the new open source knative project might make the architecture further changed to adapt with Kubernetes.
 
-### Container Factory Protocol
-
-The protocol between Controller and Scheduler.
-
-In order to maximize performance, the container creation/deletion protocol is implemented via akka message passing. Protocol can be looked like this:
-
-<script src="https://gist.github.com/tz70s/a15c32c59f17b3f4034275566484759c.js"></script>
 
 To guarantee strong consistency for container selection in controller. The scheduler will be (contains) a cluster singleton to resolve container selection. [Akka cluster singleton](https://doc.akka.io/docs/akka/2.5.14/cluster-singleton.html) is introduced here: ClusterSingletonManager will sits in Scheduler and ClusterSingletonProxy will sit in both Controller and Scheduler to access the singleton. You can checkout the doc for usage and [here's my example with less noise](https://github.com/tz70s/cluster-singleton-ex) compared to Akka provided, which contains a basic singleton and proxy setup with migration observation guide.
 

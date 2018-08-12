@@ -9,5 +9,4 @@ Hack on distributed system.
 
 * Scala
 * Akka
-* Scala.js
 * Openwhisk

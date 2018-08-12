@@ -12,7 +12,7 @@ pygmentscodefencesguesssyntax = true # Enable syntax guessing for code fences wi
 
 [params]
   author = "Tzu-Chiao Yeh" # Author's name.
-  info = "neet" # Author's job title or info.
+  info = "Taiwan, Taipei" # Author's job title or info.
   description = "" # Site description.
   keywords = "blog,developer,personal" # Site keywords.
   avatarurl = "images/profile.jpg" # Contain the path of the optionnal avatar in the static folder.

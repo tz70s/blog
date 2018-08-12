@@ -133,23 +133,17 @@ The algorithm is definitely not optimal, but we can first leave out previous pro
 
 ### Container Orchestration 
 
-The approach will be distincted by two orchestration choices: Kubernetes and Native (Docker).
+The Container Pool Model is based on single pool abstraction, to accomplish this model. We still need to have internal real resource allocation. The approach will be distincted by two orchestration choices: Kubernetes and Native (Docker).
 
 1. **Kubernetes**:
-Basically, we just call kubernetes api server with 1 to 1 mapping, it'll deal with all scheduling, health check and so on. Hence, InvokerAgentProxy has only one instance, in this case.
+Basically, we just call kubernetes api server with 1 to 1 mapping, it'll deal with all scheduling, health check and so on. Hence, in this case, the resource allocation is done by Kubernetes scheduling policy, with already well-defined resource matching and algorithm.
 
 2. **Native(Docker)**:
-Contrast to indirectly calls in Kubernetes, in the native way, we'll have to deal everything by us. Quite similar to InvokerSupervision approach, the InvokerAgentProxy will have M to M supervision, but checking liveness via docker daemon checks.
+Contrast to indirectly calls in Kubernetes, in the native way, we'll have to deal everything by us. I've introduced a simple and straightforward algorithm: assign container to a container who has enough resources. This is definitely not ideal, i.e. node search is not scalable, easy fragmentation, etc. We can further improve this in the future.
 
-Here's the signature and protocols in Native approach, full code can be found at [here]()
+<script src="https://gist.github.com/tz70s/c1cf304f2321f1a7292e882f2291d795.js"></script>
 
-There might be two potential problems on using cluster singleton:
-
-1. Perfromance bottleneck: **WIP**
-
-2. Single point of failure: akka cluster singleton will automatically migrate to another scheduler node (actor-system) once the leader (oldest) getting down. This will result in short downtime, but it can be afford to us however, the ClusterSingletonProxy will buffer messages until the new singleton is up; the latency is overall make sense b.c. this is not actually the performance critical path.
-
-**In order to do direct http calls, how can we reach warmed container after NAT environment?**
+You may find that there's an operation on port assignment. In order to do direct http calls, how can we reach warmed container after NAT environment?
 
 In Kubernetes network model, the ip-per-pod model is flattened and we can easily work without this problem. But to the native mode, the warmed containers required some mechanisms to resolve with NAT environment.
 
@@ -162,6 +156,13 @@ There are some potential ways:
 3. Port-forwarding once creation.
 
 Obviously, it's arbitrary and not applicable for option 2. I choose 3 from now.
+
+There might be two potential problems on using cluster singleton:
+
+1. Perfromance bottleneck: **WIP**
+
+2. Single point of failure: akka cluster singleton will automatically migrate to another scheduler node (actor-system) once the leader (oldest) getting down. This will result in short downtime, but it can be afford to us however, the ClusterSingletonProxy will buffer messages until the new singleton is up; the latency is overall make sense b.c. this is not actually the performance critical path.
+
 
 ### Scheduling Strategy
 

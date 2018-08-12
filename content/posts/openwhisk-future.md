@@ -70,20 +70,24 @@ In words, the roughly workflow as following:
 
 The code module contains:
 
-1. SingletonLoadBalancer:
+#### SingletonLoadBalancer
+
 SingletonLoadBalancer implements LoadBalancer trait for SPI infra. Contrast to prior ShardingContainerLoadBalancer, we'll contain nothing about scheduling logic; it'll simply look up and pass requests. When a request come in, it'll lookup container lists, which contains some context related to container and in-flight concurrent requests. There will be some larger value once concurrent activation processing got finished, but current, the in-flight concurrent request can be only 0 or 1. That is, if a request reach 0 concurrency value, it reuse the existed free container and send request into ContainerProxy, or else, it'll send message to OverflowProxy for resource requisition.
 
 <script src="https://gist.github.com/tz70s/1223bdb0e61543ece861e306c9fb50ca.js"></script>
 
-2. OverflowProxy:
+#### OverflowProxy
+
 Once OverflowProxy get message, it'll queue into Overflow Buffer. I didn't take external shared queue here, which many folks may concerned. But for Controller HA mode, it'll be required and can open up work-stealing capability. Anyway, the current implementation when receiving OverflowActivationMessage, queue in OverflowBuffer with some sendor and tracing context, and proxy to SingletonScheduler; and once it gets back with ContainerAllocation message, it'll pipe back to SingletonLoadBalancer.
 
-3. ContainerProxy 
+#### ContainerProxy
+
 ContainerProxy is similar to prior invoke one, but I'll only manage with Suspend/Resume states and face to a warmed container. Therefore, the mission on ContainerProxy will operate suspend/resume (depends on pauseGrace settings) and call /run route of containers. Finally, pipe back result to SingletonLoadBalancer.
 
 I've done this via Akka FSM module as previous did. There might be unreliable and not performant (i.e. use pause/unpause to avoid causing terminated when handling requests, or we need to introduce some synchronized value here); but using actor and FSM is nice here that we can hold states for remote containers.
 
-4. ShareStatesProxy
+#### ShareStatesProxy
+
 Concerned some proposal didn't mention, the real Scheduling algorithm; We don't have any workload-dispatch related logics in Controller side, and make Scheduler holds all logics. However, what states Scheduler should know?
 
 Consider building the prior busy/free/prewarmed pooling model:

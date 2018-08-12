@@ -6,11 +6,9 @@ tags = []
 categories = []
 +++
 
-**This post is still WIP.**
-
 OpenWhisk community is nowadays getting more consistent on the new design of architecture for performance improvement. The **future architecture** of OpenWhisk requires large internal breaking changes. To fill the gap from idea into smooth migration, there might be helpful if a mid ground exist to clear more issues. Hence, I've worked on prototyping performance improvement in real, but not that comprehensive though. However, hope this prototype hold a place for deeper discussion and discover all issues might meet in the future. 
 
-This post will be two kinds of target audiences, OpenWhisk community, GSoC mentors and reviewers:
+This post will have two kinds of target audiences, OpenWhisk community, GSoC mentors and reviewers:
 
 **For OpenWhisk community:**
 
@@ -40,10 +38,10 @@ However, OpenWhisk already provides nice infrastructure and utilities that I can
 
 The prototyping steps as follow:
 
-1. A New LoadBalancer SPI: SingletonLoadBalancer (which adapt with Container Manager)
-2. Duplicate and cut off logics from Invoker into new Container Manager.
-3. Re-use and refactor invoker-agent which is used by Kubernetes deployment. (contains some breaking changes, but I think it can also improve current kube deployment)
-4. Implement required changes.
+1. A New LoadBalancer SPI: SingletonLoadBalancer.
+2. Container Manager who manages container resources.
+3. Re-use and refactor invoker-agent which is used by Kubernetes deployment.
+4. In-detail implementation.
 
 I'll discuss these in detail below.
 
@@ -54,7 +52,7 @@ For cleaner naming convention, I've renamed some words from proposal, here's the
 
 ## Controller
 
-Most of Controller logic and programming semantics will not be changed, except for LoadBlancer. I've created a new LoadBalancer implementation in [future package]() and can be simply loaded with SPI infra.
+Most of Controller logic and programming semantics will not be changed, except for LoadBlancer. I've created a new LoadBalancer implementation in [future package](https://github.com/tz70s/incubator-openwhisk/tree/whisk-future-rebase/core/controller/src/main/scala/whisk/core/loadBalancer/future) and can be simply loaded with SPI infra. I've not done the protocols with multiple Controllers, there's still some problems need to clarify that I'll point out below.
 
 The overall LoadBalancer design:
 
@@ -64,13 +62,38 @@ In words, the roughly workflow as following:
 
 1. Call publish activation
 2. Check if there's a warmed action existed, by looking up local container list.
-3. If yes and if it's belong to owned, http call for it. Else, redirect to another container with carrying http client context.
-4. If not, queue in OverflowManager and put the activation in the overflow queue.
-5. Request for new resource, via proxy actor to Scheduler singleton.
+3. If yes and if it's belong to owned, http call for it. (Else, redirect to another controller with carrying http client context.)
+4. If not, queue in OverflowProxy and put the activation in the overflow queue.
+5. Request for new resource, via proxy actor (sub actor in OverflowProxy actor) to Scheduler singleton.
 6. After scheduler singleton's response arrived, update local container list (which generated via scheduler).
-7. If it's belong to owned, http call for it. Else, redirect to another container with carrying http client context.
+7. If it's belong to owned, http call for it. (Else, redirect to another controller with carrying http client context.)
 
-There's still some problems on the design above, and we'll have to dig this with more detail:
+The code module contains:
+
+1. SingletonLoadBalancer:
+SingletonLoadBalancer implements LoadBalancer trait for SPI infra. Contrast to prior ShardingContainerLoadBalancer, we'll contain nothing about scheduling logic; it'll simply look up and pass requests. When a request come in, it'll lookup container lists, which contains some context related to container and in-flight concurrent requests. There will be some larger value once concurrent activation processing got finished, but current, the in-flight concurrent request can be only 0 or 1. That is, if a request reach 0 concurrency value, it reuse the existed free container and send request into ContainerProxy, or else, it'll send message to OverflowProxy for resource requisition.
+
+<script src="https://gist.github.com/tz70s/1223bdb0e61543ece861e306c9fb50ca.js"></script>
+
+2. OverflowProxy:
+Once OverflowProxy get message, it'll queue into Overflow Buffer. I didn't take external shared queue here, which many folks may concerned. But for Controller HA mode, it'll be required and can open up work-stealing capability. Anyway, the current implementation when receiving OverflowActivationMessage, queue in OverflowBuffer with some sendor and tracing context, and proxy to SingletonScheduler; and once it gets back with ContainerAllocation message, it'll pipe back to SingletonLoadBalancer.
+
+3. ContainerProxy 
+ContainerProxy is similar to prior invoke one, but I'll only manage with Suspend/Resume states and face to a warmed container. Therefore, the mission on ContainerProxy will operate suspend/resume (depends on pauseGrace settings) and call /run route of containers. Finally, pipe back result to SingletonLoadBalancer.
+
+I've done this via Akka FSM module as previous did. There might be unreliable and not performant (i.e. use pause/unpause to avoid causing terminated when handling requests, or we need to introduce some synchronized value here); but using actor and FSM is nice here that we can hold states for remote containers.
+
+4. ShareStatesProxy
+Concerned some proposal didn't mention, the real Scheduling algorithm; We don't have any workload-dispatch related logics in Controller side, and make Scheduler holds all logics. However, what states Scheduler should know?
+
+Consider building the prior busy/free/prewarmed pooling model:
+
+* How do we know that which Container is busy and which is free?
+* How do we know that which Container is safe to delete and notify deletion?
+
+ShareStatesProxy do this: when Container gets pause/suspend, it'll notify Scheduler that container is busy or free. Once a deletion is being taken, it'll choose up from free pool (see more in Scheduler section) and notify back with ShareStatesProxy. Hence, ShareStatesProxy take an eval sharable container lists (actually a TrieMap) for updating and sharing with main SingletonLoadBalancer.
+
+There's still some problems on the design and implementation above, and we'll have to dig this with more detail:
 
 **It's neccessary to provide a strong consistency (warmed) container lists to be kept in each controller, how do we deal with this?**
 
@@ -193,11 +216,7 @@ That's all, there's only small changed from previous version; for more implement
 
 WIP
 
-## Benchmarking & Profiling
-
-WIP
-
-## Conclusion
+## Discussion
 
 Something didn't implement/discuss in this post and experiment:
 

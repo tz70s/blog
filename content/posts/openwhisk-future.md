@@ -174,7 +174,7 @@ The responsibility on operating containers are segarated now:
 2. Creation/Deletion on Scheduler.
 3. Log on InvokerAgent.
 
-I've splitted these into there different traits: ContainerRunnable, ContainerLog and CoarseGrainContainer.
+I've splitted these into several different traits: **ContainerRunnable** for Controller side (ContainerProxy mixin it), **ContainerLog** for Invoker Agent, **CoarseGrainContainer** for Scheduler side and **ContainerRestCall** for sharing capability on doing rest calls.
 
 [You can find more detail here.](https://github.com/tz70s/incubator-openwhisk/blob/whisk-future-rebase/common/scala/src/main/scala/whisk/core/containerpool/future/Container.scala)
 
@@ -218,7 +218,7 @@ GET _http://whisk.agent.host/log/container_
 
 Will return status 204 on success, 500 on general failure and 400 on log parsing failure.
 
-That's all, there's only small changed from previous version; for more implementation detial, you can refer to [this branch](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent).
+That's all, there's only small changed from previous version; for more implementation detial, you can [refer to here](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent/docker/invoker-agent).
 
 ## Demo
 
@@ -244,8 +244,6 @@ What about the number of Controller will receive the updates once Scheduler deci
 **How do we deal with overflow messages?**
 
 There's no consistent here due to the unbounded topics problem. **WIP**
-
-WIP
 
 ## GSOC Conclusion
 

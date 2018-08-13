@@ -18,6 +18,15 @@ This objectives of this post and protoype:
 * Hope to help community migrate to the futrue architecture smoothly.
 * Might be a starting point for further discussion.
 
+Something didn't implement/discuss in this post and experiment:
+
+* Kubernetes: I only do prototyping for native (docker) side.
+* Logging.
+* Performance optimization on message queue.
+* Error path and tests.
+* Controller HA.
+* Scheduler persistence.
+
 **For GSoC mentors (Rodric and Carlos) and reviewers:**
 
 This will be my final result during the GSoC progress. I'll describe my exprience in the bottom or maybe another post.
@@ -139,7 +148,7 @@ The Container Pool Model is based on single pool abstraction, to accomplish this
 Basically, we just call kubernetes api server with 1 to 1 mapping, it'll deal with all scheduling, health check and so on. Hence, in this case, the resource allocation is done by Kubernetes scheduling policy, with already well-defined resource matching and algorithm.
 
 2. **Native(Docker)**:
-Contrast to indirectly calls in Kubernetes, in the native way, we'll have to deal everything by us. I've introduced a simple and straightforward algorithm: assign container to a container who has enough resources. This is definitely not ideal, i.e. node search is not scalable, easy fragmentation, etc. We can further improve this in the future.
+Contrast to indirectly calls in Kubernetes, in the native way, we'll have to deal everything by us. I've introduced a simple and straight-forward algorithm: assign container to a node who has enough resources. This is definitely not ideal, i.e. node search is not scalable, easy fragmentation, etc. We can further improve this in the future.
 
 <script src="https://gist.github.com/tz70s/c1cf304f2321f1a7292e882f2291d795.js"></script>
 
@@ -157,18 +166,25 @@ There are some potential ways:
 
 Obviously, it's arbitrary and not applicable for option 2. I choose 3 from now.
 
-There might be two potential problems on using cluster singleton:
+### New Container Trait 
 
-1. Perfromance bottleneck: **WIP**
+The responsibility on operating containers are segarated now: 
+
+1. Pause/Resume on Controller.
+2. Creation/Deletion on Scheduler.
+3. Log on InvokerAgent.
+
+I've splitted these into there different traits: ContainerRunnable, ContainerLog and CoarseGrainContainer.
+
+[You can find more detail here.](https://github.com/tz70s/incubator-openwhisk/blob/whisk-future-rebase/common/scala/src/main/scala/whisk/core/containerpool/future/Container.scala)
+
+### Issues Remain
+
+1. Perfromance bottleneck: Cluster singleton can easily reach performance bottleneck, therefore, we should try our best to reduce workload on it. First, the sophisticated scheduling should be scalable on large scale nodes: in Kubernetes, the scheduling is done by kube-scheduler (within API server). The better way is that Docker side should be also standalone as well, we can figure out later. Second, in which proposal didn't mention, to keep the free/prewarm/busy model the pause/unpause messages handling; they will be sent by every pause grace (500ms default) reach or new calls arrived. 
 
 2. Single point of failure: akka cluster singleton will automatically migrate to another scheduler node (actor-system) once the leader (oldest) getting down. This will result in short downtime, but it can be afford to us however, the ClusterSingletonProxy will buffer messages until the new singleton is up; the latency is overall make sense b.c. this is not actually the performance critical path.
 
-
-### Scheduling Strategy
-
-Cutting logics from ShardingLoadBalancer, with simple sharding mechanism.
-
-WIP
+Some other issues I'll discuss below.
 
 ## Invoker Agent
 
@@ -202,16 +218,6 @@ GET _http://whisk.agent.host/log/container_
 
 Will return status 204 on success, 500 on general failure and 400 on log parsing failure.
 
-These operations are all done by HTTP routes; but not enough here. The original pause/resume only implemented via docker commands, which isn't performant. Same as docker usage in original Invoker docker implementation, we need the optimization by using runc here.
-
-Overall, adjust these into an extended functionality:
-
-Extended suspend/resume implementation.
-
-<script src="https://gist.github.com/tz70s/42d023beb999ca7bcbb614065d48bf8f.js"></script>
-
-<script src="https://gist.github.com/tz70s/f8d353c54f876735d039755ac08df3ab.js"></script>
-
 That's all, there's only small changed from previous version; for more implementation detial, you can refer to [this branch](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent).
 
 ## Demo
@@ -220,7 +226,8 @@ WIP
 
 ## Discussion
 
-#### Issues
+### Issues
+
 **It's neccessary to provide a strong consistency (warmed) container lists to be kept in each controller, how do we deal with this?**
 
 A basic thinking: we can keep only owned container lists in each in-memory store and lookup Scheduler for redirecting calls every time. But this will not only lead to additional latency between Controller and Scheduler, it can be easier to let Scheduler reach performance bottleneck.
@@ -237,14 +244,6 @@ What about the number of Controller will receive the updates once Scheduler deci
 **How do we deal with overflow messages?**
 
 There's no consistent here due to the unbounded topics problem. **WIP**
-
-
-Something didn't implement/discuss in this post and experiment:
-
-* Kubernetes: I only do prototyping for native (docker) side.
-* Logging.
-* Performance optimization on message queue.
-* Tests.
 
 WIP
 

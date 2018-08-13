@@ -8,7 +8,7 @@ categories = []
 
 OpenWhisk community is nowadays getting more consistent on the new design of architecture for performance improvement. The **future architecture** of OpenWhisk requires large internal breaking changes. To fill the gap from idea into smooth migration, there might be helpful if a mid ground exist to clear more issues. Hence, I've worked on prototyping performance improvement in real, but not that comprehensive though. However, hope this prototype hold a place for deeper discussion and discover all issues might meet in the future. 
 
-This post will have two kinds of target audiences, OpenWhisk community, GSoC mentors and reviewers:
+This post may have two kinds of target audiences, OpenWhisk community, GSoC mentors and reviewers:
 
 **For OpenWhisk community:**
 
@@ -29,7 +29,7 @@ Something didn't implement/discuss in this post and experiment:
 
 **For GSoC mentors (Rodric and Carlos) and reviewers:**
 
-This will be my final result during the GSoC progress. I'll describe my exprience in the bottom with some regular checks.
+This will be my final result during GSoC progress. But in GSoC guidance, please refer to [here for non-technical description](https://tz70s.github.io/posts/gsoc-2018/).
 
 ## Architecture recap
 
@@ -234,36 +234,11 @@ There's still plenty of things not being done, and the approach is not ideal eit
 
 Using cluster singleton in Scheduler is mainly for providing strong consistency on managing containers' states. However, lookup states store in Scheduler will lead to poor performance (gains latency and makes singleton busy).
 
-Basic thinking: we can keep only owned container lists in each in-memory store.
-
-However, this will lead to transient in-consistent. How can we avoid this?
-
-It's pretty sure we can't make all these cache synchronized when lists get updated, it'll required large performance penalty on blocking.
-
-To achieve this, we can only **make it in-consistent at some point; but we'll not execute once if there's inconsistent.** Iff one Controller redirect to another, we'll add timeout and retry if another Controller was offline, or using akka Cluster Event can also update this. Then we'll ask Scheduler for a new consistent list. Iff the redirect Success but not belong to itself? The in-consistent occurred, this may happened to event ordering (imagine one Controller ask for resource and Scheduler allocate to another Controller, and update list to them, the event ordering can't be guarantee here). In this case, the redirected Controller will ask again for Scheduler, and repeat the process untill it find the correct warmed container.
-
-What about the number of Controller will receive the updates once Scheduler decide it? It's better make it with limit ranges/groups for updates to make Scheduler less burden. **WIP**
+To release the burden and latency on lookup Scheduler, we can keep only owned container lists (actually a map) in each in-memory store (as I did and proposal mentioned that). However, introduce cache will cause temporary inconsistent. How do we solve this?
 
 **How do we deal with overflow messages?**
 
-There's no consistent here due to the unbounded topics problem. **WIP**
+There's not consistent here due to issues related to message queues (i.e. unbounded topics, using pub/sub, etc.). I'll experiment these further as well.
 
-## GSOC Conclusion
+**Will it be performance bottleneck on Scheduler Singleton?**
 
-My overall performance is poor during GSoC progress, no excuse. However, thanks my mentors Rodric and Carlos and other OpenWhisk community members for reviewing my code and giving me advices. I appreciate for this chance and learn a lot. I'll keep track, investigate and contribute to OpenWhisk as best as I can.
-
-Some regular checks:
-
-1. [Whisk Future Experiment: main line](https://github.com/tz70s/incubator-openwhisk/tree/whisk-future-rebase). Sorry for squashed all commits, it's easier for me to keep rebase upstream commits.
-2. [Whisk Future Experiment: invoker agent](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent)
-3. [Commits on OpenWhisk main repo](https://github.com/apache/incubator-openwhisk/commits/master?author=tz70s)
-
-Guideline:
-
-1. Describe my work briefly.
-
-2. What is done.
-
-3. TODO
-
-4. Reference links.

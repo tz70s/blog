@@ -232,9 +232,11 @@ There's still plenty of things not being done, and the approach is not ideal eit
 
 **It's neccessary to provide a strong consistency (warmed) container lists to be kept in each controller, how do we deal with this?**
 
-A basic thinking: we can keep only owned container lists in each in-memory store and lookup Scheduler for redirecting calls every time. But this will not only lead to additional latency between Controller and Scheduler, it can be easier to let Scheduler reach performance bottleneck.
+Using cluster singleton in Scheduler is mainly for providing strong consistency on managing containers' states. However, lookup states store in Scheduler will lead to poor performance (gains latency and makes singleton busy).
 
-What if we keep others record? Obviously, this will lead to in-consistent, and how do we update this?
+Basic thinking: we can keep only owned container lists in each in-memory store.
+
+However, this will lead to transient in-consistent. How can we avoid this?
 
 It's pretty sure we can't make all these cache synchronized when lists get updated, it'll required large performance penalty on blocking.
 
@@ -256,3 +258,12 @@ Some regular checks:
 2. [Whisk Future Experiment: invoker agent](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent)
 3. [Commits on OpenWhisk main repo](https://github.com/apache/incubator-openwhisk/commits/master?author=tz70s)
 
+Guideline:
+
+1. Describe my work briefly.
+
+2. What is done.
+
+3. TODO
+
+4. Reference links.

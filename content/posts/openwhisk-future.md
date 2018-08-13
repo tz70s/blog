@@ -29,7 +29,7 @@ Something didn't implement/discuss in this post and experiment:
 
 **For GSoC mentors (Rodric and Carlos) and reviewers:**
 
-This will be my final result during the GSoC progress. I'll describe my exprience in the bottom or maybe another post.
+This will be my final result during the GSoC progress. I'll describe my exprience in the bottom with some regular checks.
 
 ## Architecture recap
 
@@ -224,7 +224,9 @@ That's all, there's only small changed from previous version; for more implement
 
 WIP
 
-## Discussion
+## Conclusion & Discussion
+
+There's still plenty of things not being done, and the approach is not ideal either; but hopes this help some OpenWhisk folks to join brain storming and find out the consistent design on future architecture of OpenWhisk.
 
 ### Issues
 
@@ -240,11 +242,17 @@ To achieve this, we can only **make it in-consistent at some point; but we'll no
 
 What about the number of Controller will receive the updates once Scheduler decide it? It's better make it with limit ranges/groups for updates to make Scheduler less burden. **WIP**
 
-
 **How do we deal with overflow messages?**
 
 There's no consistent here due to the unbounded topics problem. **WIP**
 
 ## GSOC Conclusion
 
-WIP.
+My overall performance is poor during GSoC progress, no excuse. However, thanks my mentors Rodric and Carlos and other OpenWhisk community members for reviewing my code and giving me advices. I appreciate for this chance and learn a lot. I'll keep track, investigate and contribute to OpenWhisk as best as I can.
+
+Some regular checks:
+
+1. [Whisk Future Experiment: main line](https://github.com/tz70s/incubator-openwhisk/tree/whisk-future-rebase). Sorry for squashed all commits, it's easier for me to keep rebase upstream commits.
+2. [Whisk Future Experiment: invoker agent](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent)
+3. [Commits on OpenWhisk main repo](https://github.com/apache/incubator-openwhisk/commits/master?author=tz70s)
+

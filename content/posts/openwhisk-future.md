@@ -301,7 +301,7 @@ Transfer/sec:      8.36KB
 
 Video records for observation:
 
-**New architecture**
+#### New architecture
 
 In the new architecture, for 1 action, I think it's arbitrary to say that it has greater performance, because of lacks of plenty functionalities (no logs collection, no ssl termination, etc). Please keep doubt to this estimated result. Note that you can see that there are some Non-2xx or 3xx responses, they are system rejection for overloaded, for early failure from scheduler, if all pools are in busy.
 
@@ -325,7 +325,7 @@ Transfer/sec:     97.80KB
 
 ```
 
-**New architecture: 4 actions**
+#### New architecture: 4 actions
 
 ```bash
 

@@ -216,13 +216,7 @@ Will return status 204 on success, 500 on general failure and 400 on log parsing
 
 That's all, there's only small changed from previous version; for more implementation detial, you can [refer to here](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent/docker/invoker-agent).
 
-## Demo and Performance tests
-
-Basically, the implementation will not change any semantic on OpenWhisk programming model and usage. Here's the recorded video for invocation and free/busy/prewarm pool debugging during wrk testing.
-
-[![wsk cli](https://img.youtube.com/vi/NndbACyIj7M/0.jpg)](https://youtu.be/NndbACyIj7M)
-
-### Load Tests
+## Performance tests
 
 It's sadly I don't have available resource to test the performance, simply use my macbook (2017, Core i5 2.3GHz, 8GB RAM, 128GB SSD) for benchmarking. For many reason (i.e. not sufficient resource, no runc optimization, resource interference, etc.), the performance is poor and not that accurate. Therefore, I can't give the arbitrary conclusion on performance improvement; but we can observer further issues during load tests.
 
@@ -301,7 +295,7 @@ Transfer/sec:      8.36KB
 
 Video records for observation:
 
-#### New architecture
+#### New architecture: 1 actions
 
 In the new architecture, for 1 action, I think it's arbitrary to say that it has greater performance, because of lacks of plenty functionalities (no logs collection, no ssl termination, etc). Please keep doubt to this estimated result. Note that you can see that there are some Non-2xx or 3xx responses, they are system rejection for overloaded, for early failure from scheduler, if all pools are in busy.
 
@@ -327,17 +321,46 @@ Transfer/sec:     97.80KB
 
 #### New architecture: 4 actions
 
+As mentioned above, there is a pause/resume bug, therefore, the statistic is not accurate. Discuss below.
+
 ```bash
-
-
+4 threads and 40 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   207.64ms  962.41ms   9.98s    95.05%
+    Req/Sec    78.16     97.98   390.00     79.54%
+  Latency Distribution
+     50%    4.28ms
+     75%    7.53ms
+     90%   43.68ms
+     99%    5.62s
+  8268 requests in 5.00m, 4.94MB read
+  Socket errors: connect 0, read 0, write 0, timeout 185
+  Non-2xx or 3xx responses: 3665
+Requests/sec:     27.56
+Transfer/sec:     16.86KB
 ```
 
 ### Latency
 
+I've used tracing support with Jaegar UI for troubleshooting and latency observation. Jaegar is compatible with Zipkin trace and painless deployment.
+
+There are some average latency metrics in wrk above, mainly for non-pausing/resuming operations (direct calls), basically under 10ms.
+
+Here's the tracing result for calls during warmed, but pause/resume. Latency gains for awaiting resuming.
+
+![Image](images/latency.png)
+
+In average, the latency on invocation averages in cross 10 seconds on my Mac; including container removal, create and initialization.
+
+![Image](images/latency-cold-controller.png)
+
+The bottleneck is initialization.
+
+![Image](images/latency-cold-scheduler.png)
 
 ## Conclusion & Discussion
 
-There's still plenty of things not being done, and the approach is not ideal either; but hopes this help some OpenWhisk folks to join brain storming and find out the consistent design on future architecture of OpenWhisk.
+There's still plenty of things not being done, and the approach is not ideal either; I'll keep work on this and hopes this help some OpenWhisk folks to join brain storming and find out the consistent design on future architecture of OpenWhisk.
 
 ### Issues
 
@@ -351,11 +374,20 @@ To release the burden and latency on lookup Scheduler, we can keep only owned co
 
 There's not consistent here due to issues related to message queues (i.e. unbounded topics, using pub/sub, etc.). I'll experiment these further as well.
 
-**Blocking suspend/resume operations**
+**Problematics on ContainerProxy**
+
+In order to guarantee correctness, I've used blocking Await in ContainerProxy. There's a potential problem is: when an activation is running, we can't call pause on it. I'll keep figure out this problem as soon as possible.
 
 **States for free/busy pool recognition?**
 
+Is the state related to free/busy == pause/resume?
+
+There's a potential tradeoff is: if pause/resume becoming bottleneck, we would like to use greater pause grace. However, greater pause grace means that the container pool is easier to be full of busy states. Ideally, in runc optimization, there's no problem at all. However, in docker version pause/suspend, this may need to be concerned.
+
 **Peek container requisition.**
+
+When burst requests are coming (plenty of cold start occurred), the Scheduler will response to over-estimated resources to system. We should further introduce scheduling algorithm improvement. However, it's great that we have a single place (Scheduler) to consider and experiment overall resource allocation. 
 
 **Will it be performance bottleneck on Scheduler Singleton?**
 
+Actually, Scheduler can not only keep create and deletion states; as more states come in, will it be a performance bottleneck on large scale system?

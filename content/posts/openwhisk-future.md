@@ -63,11 +63,7 @@ For cleaner naming convention, I've renamed some words from proposal, here's the
 
 Most of Controller logic and programming semantics will not be changed, except for LoadBlancer. I've created a new LoadBalancer implementation in [future package](https://github.com/tz70s/incubator-openwhisk/tree/whisk-future-rebase/core/controller/src/main/scala/whisk/core/loadBalancer/future) and can be simply loaded with SPI infra. I've not done the protocols with multiple Controllers, there's still some problems need to clarify that I'll point out below.
 
-The overall LoadBalancer design:
-
-圖
-
-In words, the roughly workflow as following:
+The overall LoadBalancer workflow as following:
 
 1. Call publish activation
 2. Check if there's a warmed action existed, by looking up local container list.
@@ -93,7 +89,7 @@ Once OverflowProxy get message, it'll queue into Overflow Buffer. I didn't take 
 
 ContainerProxy is similar to prior invoke one, but I'll only manage with Suspend/Resume states and face to a warmed container. Therefore, the mission on ContainerProxy will operate suspend/resume (depends on pauseGrace settings) and call /run route of containers. Finally, pipe back result to SingletonLoadBalancer.
 
-I've done this via Akka FSM module as previous did. There might be unreliable and not performant (i.e. use pause/unpause to avoid causing terminated when handling requests, or we need to introduce some synchronized value here); but using actor and FSM is nice here that we can hold states for remote containers.
+In order to make sure the correctness, I've introduced two synchronized values here. It'll cause some problems while an _in-flight_ activation is running but timer tick triggers and pause container. Therefore, it takes some paused here.
 
 #### ShareStates Proxy
 
@@ -220,9 +216,124 @@ Will return status 204 on success, 500 on general failure and 400 on log parsing
 
 That's all, there's only small changed from previous version; for more implementation detial, you can [refer to here](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent/docker/invoker-agent).
 
-## Demo
+## Demo and Performance tests
 
-WIP
+Basically, the implementation will not change any semantic on OpenWhisk programming model and usage. Here's the recorded video for invocation and free/busy/prewarm pool debugging during wrk testing.
+
+[![wsk cli](https://img.youtube.com/vi/NndbACyIj7M/0.jpg)](https://youtu.be/NndbACyIj7M)
+
+### Load Tests
+
+It's sadly I don't have available resource to test the performance, simply use my macbook (2017, Core i5 2.3GHz, 8GB RAM, 128GB SSD) for benchmarking. For many reason (i.e. not sufficient resource, no runc optimization, resource interference, etc.), the performance is poor and not that accurate. Therefore, I can't give the arbitrary conclusion on performance improvement; but we can observer further issues during load tests.
+
+#### Environment
+
+* MacBookPro 2017, Core i5 2.3GHz, 8GB RAM, 128GB SSD.
+* Docker for mac, version 18.06.0-ce-mac69, edge channel.
+* Tune docker machine to maximum value (4 vCPU, 8GB RAM)
+
+#### Setup
+
+For comparision, I've setup:
+
+* A full set of OpenWhisk (current architecture) with 1 Nginx, 1 Controller, 1 Kafka, 1 CouchDB and 2 Invokers.
+* New architecture of OpenWhisk with no Nginx (test via http), 1 Controller, 1 CouchDB, 1 Scheduler and 1 InvokerAgent (note that, the actual _virtual node_ is two (2 container factories), but for local tests, I use 1 invokerAgent only).
+* Same limitation(no limit), same slots (numOfCores * coreShares), 50 millis pause grace, etc.
+* Benchmark via wrk, I've extended the original wrk tests in OpenWhisk to [multiple actions version](https://github.com/tz70s/whisk-wrk-bench).
+* Running 1 action tests for 5 minutes and 4 action tests for 5 minutes.
+* wrk args: 10 * (number of actions) concurrency, 4 threads.
+* Benchmark are all start from 4 prewarmed containers.
+
+Note that I've tried many times, the results are similar.
+
+#### Current architecture: 1 action
+
+As you can see, the resources are definitely overloaded. Note that it's not an accurate _average_ latency under normal throttling.
+
+```bash
+4 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   205.85ms  255.04ms   4.08s    85.18%
+    Req/Sec    16.89     10.71    60.00     64.42%
+  Latency Distribution
+     50%   82.82ms
+     75%  302.75ms
+     90%  547.36ms
+     99%  991.84ms
+  15938 requests in 5.00m, 11.90MB read
+Requests/sec:     53.11
+Transfer/sec:     40.59KB
+```
+
+#### Current architecture: 4 actions
+
+The benchamrk result is definitely meaningless, it's heavily overloaded to run 4 actions. But the main reason leads to poor performance on 4 actions we already knows is the problem on no visiblity between Invokers. In addition, I've found that there are easily causing failure starting from clean system, therefore, I've post a pure start and a re-run result.
+
+```bash
+4 threads and 40 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     5.87s     2.69s    9.59s    64.52%
+    Req/Sec     0.83      1.99    10.00     89.67%
+  Latency Distribution
+     50%    6.32s
+     75%    8.11s
+     90%    8.89s
+     99%    9.59s
+  323 requests in 5.00m, 247.36KB read
+  Socket errors: connect 88542, read 0, write 0, timeout 292
+Requests/sec:      1.08
+Transfer/sec:     844.07B
+
+4 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.38s     1.87s    9.79s    82.91%
+    Req/Sec     6.73      5.87    48.00     82.41%
+  Latency Distribution
+     50%  390.06ms
+     75%    2.11s
+     90%    4.38s
+     99%    7.45s
+  3260 requests in 5.00m, 2.45MB read
+  Socket errors: connect 0, read 0, write 0, timeout 2
+Requests/sec:     10.86
+Transfer/sec:      8.36KB
+```
+
+Video records for observation:
+
+**New architecture**
+
+In the new architecture, for 1 action, I think it's arbitrary to say that it has greater performance, because of lacks of plenty functionalities (no logs collection, no ssl termination, etc). Please keep doubt to this estimated result. Note that you can see that there are some Non-2xx or 3xx responses, they are system rejection for overloaded, for early failure from scheduler, if all pools are in busy.
+
+I've also found pause/resume bug during high load, I'll described in the issue section at the bottom.
+
+```bash
+4 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    11.37ms   50.32ms   1.02s    98.91%
+    Req/Sec   131.36     48.86   232.00     64.19%
+  Latency Distribution
+     50%    6.60ms
+     75%    8.63ms
+     90%   10.77ms
+     99%   66.42ms
+  51199 requests in 5.00m, 28.66MB read
+  Socket errors: connect 0, read 0, write 0, timeout 27
+  Non-2xx or 3xx responses: 27
+Requests/sec:    170.62
+Transfer/sec:     97.80KB
+
+```
+
+**New architecture: 4 actions**
+
+```bash
+
+
+```
+
+### Latency
+
 
 ## Conclusion & Discussion
 
@@ -239,6 +350,12 @@ To release the burden and latency on lookup Scheduler, we can keep only owned co
 **How do we deal with overflow messages?**
 
 There's not consistent here due to issues related to message queues (i.e. unbounded topics, using pub/sub, etc.). I'll experiment these further as well.
+
+**Blocking suspend/resume operations**
+
+**States for free/busy pool recognition?**
+
+**Peek container requisition.**
 
 **Will it be performance bottleneck on Scheduler Singleton?**
 

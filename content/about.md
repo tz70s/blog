@@ -14,10 +14,8 @@ Hacking distributed system.
 
 ## Skills
 
-* Programming Language: Scala, Java, C/C++, Rust, Go, Javascript(Node).
+* Programming Languages: Scala, Java, C/C++, Rust, Go, Javascript(Node).
 
 ## Status
 
-Pursuing master degree in National Taiwan University, Electrical Engineering - Computer Science Group.
-
-Research topic on programming model and system runtime in Edge Computing.
+Pursuing master degree in National Taiwan University; research topic on programming model and system runtime in Edge Computing.

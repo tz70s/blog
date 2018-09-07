@@ -91,7 +91,7 @@ Once OverflowProxy get message, it'll queue into Overflow Buffer. I didn't take 
 
 ContainerProxy is similar to prior invoke one, but I'll only manage with Suspend/Resume states and face to a warmed container. Therefore, the mission on ContainerProxy will operate suspend/resume (depends on pauseGrace settings) and call /run route of containers. Finally, pipe back result to SingletonLoadBalancer.
 
-In order to make sure the correctness, I've introduced two synchronized values here. It'll cause some problems while an _in-flight_ activation is running but timer tick triggers and pause container. Therefore, it takes some paused here.
+In order to make sure the correctness, I've introduced two synchronized values here. It'll cause some problems while an **in-flight** activation is running but timer tick triggers and pause container. Therefore, it takes some paused here.
 
 #### ShareStates Proxy
 
@@ -192,7 +192,7 @@ However, this may not meet OpenWhisk requirements:
 
 1. One siginificant bottleneck and many folks concerned: **activation log**. We already had plenty of log store implementation, i.e. elasticsearch, docker file, etc. In general, we should not pass logs from whisk agent back to either Controller or Whisk Scheduler. Instead, directly store activation log into log store. Therefore, we can and we should reuse the codebase from implemented log store.
 
-2. Better **integration**: Go has it's own workspace and directory convention ($GOPATH). It's neccessary if need a mature dependency management, i.e. dep. By convention, we might locate it into some kind of path: _github.com/apache/incubator-openwhisk-invoker-agent_, in other word, a separate repo; this definitely makes the project fractionized. Therefore, I vote for using scala-based implementation on InvokerAgent.
+2. Better **integration**: Go has it's own workspace and directory convention ($GOPATH). It's neccessary if need a mature dependency management, i.e. dep. By convention, we might locate it into some kind of path: github.com/apache/incubator-openwhisk-invoker-agent, in other word, a separate repo; this definitely makes the project fractionized. Therefore, I vote for using scala-based implementation on InvokerAgent.
 
 Regardless which one to be reused, InvokerAgent is not the main target I'm going to verify it. Use it is fined here, currently.
 
@@ -200,19 +200,19 @@ Basic functionalities of InvokerAgent:
 
 * **Suspend**: suspend/pause a specific container. 
   
-GET  _http://whisk.agent.host/suspend/container_
+GET  http://whisk.agent.host/suspend/container
 
 Will return status 204 on success and 500 on failure.
 
 * **Resume**: resume a specific container.
 
-GET  _http://whisk.agent.host/resume/container_
+GET  http://whisk.agent.host/resume/container
 
 Will return status 204 on success and 500 on failure.
 
 * **Log**: read container logs and collect to a log sink file, and return back with JSON structure.
 
-GET _http://whisk.agent.host/log/container_
+GET http://whisk.agent.host/log/container
 
 Will return status 204 on success, 500 on general failure and 400 on log parsing failure.
 
@@ -233,7 +233,7 @@ It's sadly I don't have available resource to test the performance, simply use m
 For comparision, I've setup:
 
 * A full set of OpenWhisk (current architecture) with 1 Nginx, 1 Controller, 1 Kafka, 1 CouchDB and 2 Invokers.
-* New architecture of OpenWhisk with no Nginx (test via http), 1 Controller, 1 CouchDB, 1 Scheduler and 1 InvokerAgent (note that, the actual _virtual node_ is two (2 container factories), but for local tests, I use 1 invokerAgent only).
+* New architecture of OpenWhisk with no Nginx (test via http), 1 Controller, 1 CouchDB, 1 Scheduler and 1 InvokerAgent (note that, the actual **virtual node** is two (2 container factories), but for local tests, I use 1 invokerAgent only).
 * Same limitation(no limit), same slots (numOfCores * coreShares), 50 millis pause grace, etc.
 * Benchmark via wrk, I've extended the original wrk tests in OpenWhisk to [multiple actions version](https://github.com/tz70s/whisk-wrk-bench).
 * Running 1 action tests for 5 minutes and 4 action tests for 5 minutes.
@@ -244,7 +244,7 @@ Note that I've tried many times, the results are similar.
 
 #### Current architecture: 1 action
 
-As you can see, the resources are definitely overloaded. Note that it's not an accurate _average_ latency under normal throttling.
+As you can see, the resources are definitely overloaded. Note that it's not an accurate **average** latency under normal throttling.
 
 ```bash
 4 threads and 10 connections
@@ -350,15 +350,15 @@ There are some average latency metrics in wrk above, mainly for non-pausing/resu
 
 Here's the tracing result for calls during warmed, but pause/resume. Latency gains for awaiting resuming.
 
-![Image](images/latency.png)
+![Image](/images/latency.png)
 
 In average, the latency on invocation averages in cross 10 seconds on my Mac; including container removal, create and initialization.
 
-![Image](images/latency-cold-controller.png)
+![Image](/images/latency-cold-controller.png)
 
 The bottleneck is initialization.
 
-![Image](images/latency-cold-scheduler.png)
+![Image](/images/latency-cold-scheduler.png)
 
 ## Conclusion & Discussion
 

@@ -1,5 +1,5 @@
 +++
-title = "OpenWhisk performance improvement"
+title = "OpenWhisk Performance Improvement"
 date = "2018-07-24"
 slug = "openwhisk-performance-improvement" 
 tags = []

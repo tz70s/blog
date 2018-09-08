@@ -2,7 +2,7 @@
 title = "Note - MBrace: Cloud Computing with Monads"
 date = "2018-09-07"
 slug = "mbrace" 
-tags = ["critics"]
+tags = []
 categories = []
 +++
 
@@ -190,4 +190,4 @@ An execution engine that include facilities for managing, monitoring and debuggi
 
 This paper gives a well-started introduction for using monad in distributed programming. It's easy and powerful like everything you may familiar with, i.e. IO effect, Task effect or Future. Can be fluently composed into complex functiona transformation workflow. More thankfully, its [open sourced](https://github.com/mbraceproject/MBrace.Core)! Research papers are usually restricted for describing more detail about implementation, however, we can go deeper here.
 
-For my own further readings: F# async, CloudHaskell and free continuation monad! I'll revisit this paper for more concern about side-effect and failure handling.
+For my own further readings: F# async, CloudHaskell and free continuation monad!

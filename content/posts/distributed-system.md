@@ -202,7 +202,7 @@ Casual consistency 是要求如果兩個 event 有因果關係的話，則要求
 
 ![](https://i.imgur.com/uqE9XxF.png)
 
-P2 把 x 從 1 改成 2，因此讀取操作不允許出現 R(x)2,R(x)1 的現象。但是此例中，y 操作没有因果序，所以 P3 讀到 R(y)2, R(y)1 和 P4 讀到 R(y)1, R(y)2 的在 Causal Consistency 是允許的。
+P2 把 x 從 1 改成 2，因此讀取操作不允許出現 R(x)2,R(x)1 的現象。但是此例中，y 操作没有因果序，所以 P3 讀到 R(y)1, R(y)2 和 P4 讀到 R(y)2, R(y)1 的在 Causal Consistency 是允許的。
 
 **Eventual consistency**
 

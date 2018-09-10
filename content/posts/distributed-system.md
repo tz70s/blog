@@ -25,7 +25,7 @@ categories = []
 ### Performance (and latency)
 > is characterized by the amount of useful work accomplished by a computer system compared to the time and resources used
 
-從字面上的意思來看就是工作完成/花的時間&用了多少 resource，而這當然在不同 context 下會有不同的樣子，如 `response time, throughput, utilization` 都可以視為 performance 的 metrics，只不過當然這些彼此都可能有 tradeoff 存在，例如 low response time 和 high throughput 不一定同時成立。
+從字面上的意思來看就是工作完成/花的時間&用了多少 resource，而這當然在不同 context 下會有不同的樣子，如 `response time, throughput, utilization` 都可以視為 performance 的 metrics，只不過當然這些彼此都可能有 tradeoff 存在，例如 low response time 和 high throughput 不同時成立。
 
 ### Availability (and fault tolerance)
 > the proportion of time a system is in a functioning condition. If a user cannot access the system, it is said to be unavailable
@@ -34,8 +34,6 @@ categories = []
 
 而 **Fault tolerance** 代表的是
 > ability of a system to behave in a well-defined manner once faults occur
-
-簡單明瞭，略
 
 ### Abstraction and Models
 
@@ -55,8 +53,8 @@ categories = []
 
 **Partitioning** 主要是把 dataset 分成不同的獨立 set，降低 dataset growth 所造成的影響。
 
-* 可以增進 performance ，利用相關的 data 被分割到相同的 partition (概念有點像 locality )
-* 可以增進 availability ，利用分割的 failure 可視為獨立的。(不會有相依 failure?)
+* 可以增進 performance ，利用相關的 data 被分割到相同的 partition
+* 可以增進 availability ，利用分割的 failure 可視為獨立的。(no cascading failure)
 
 但 partitioning 是 apllication-specific，所以在處理上得設計好 access 的方式，**處理好因為去除相依性所帶來的限制**，所以比較多還是會考慮在 replication。
 
@@ -65,9 +63,7 @@ categories = []
 * 一樣可以增進 performance，因為有額外的運算資源可以處理 copy of data，也可以 cache。
 * 也可以增進 availability，**bj4**
 
-但 replication 可以讓我們達到 scalability, performance, faultolerance，但則要考慮到 **consistency** 的問題，選擇怎麼樣的 consistency model 是很殘酷的問題。
-
-第一章都在講廢話...。
+但 replication 可以讓我們達到 scalability, performance, faultolerance，但則要考慮到 **consistency** 的問題，選擇怎麼樣的 consistency model 是最重要的問題。
 
 ## Up and down the level of abstraction
 
@@ -97,7 +93,7 @@ Programs 在分散式系統中
 
 * Ability to execute a program
 * Ability to store data into volatile memory and into stable state(persistent)
-* a clock
+* A clock
 
 目前主流是用 **crash-recovery failure model**，當一個 node fail 時，他有可能會在某個點 recover。**Byzantine fault tolerance** 則是 cost 太高，比較不常見。
 
@@ -131,7 +127,7 @@ No timing assumptions
 Consensus problem 其實主要是在講**同意**這件事情
 
 1. Agreement : 全部正確的 process 都要同意相同的值。
-2. Integrity : 全部正確的 process 只能決定最多一個值，且是由某些 process 提出的。
+2. Integrity : 全部正確的 process 只能決定最多一個值，是由某些 process 提出的。
 3. Termination : 全部的 process 最終會得出一個 decision 。
 4. Validity : 如果全部的 process 提出相同的值 V，則決定 V。
 
@@ -139,7 +135,7 @@ Consensus problem 其實主要是在講**同意**這件事情
 假設
 
 * Asynchrouns system model (no timing assumtion)
-* No communication failure (reliable network)
+* Even no communication failure (reliable network)
 * Nodes can only fail by crashing
 
 結論 : **不要浪費時間在異步系統上解決consensus problem**，即便是在以上這麼小的假設。
@@ -160,14 +156,14 @@ Consensus problem 其實主要是在講**同意**這件事情
 2. CP(consistency + partition tolerance)
 3. AP(availability + partition tolerance)
 
-書中寫得實在是太難懂了，我參考了其他的見解。重要觀點可以從 Partition tolerance 來起手。
+首先，CA 的系統如傳統的分散式資料庫，是建立在強假設不會有 partition 發生，系統本身也沒辦法區分 partition 。假設今天 partition 出現了，系統唯一能做的就是停止寫入以保持一致性，或是反過來。但事實上這並不符合現代需求和物理現象。
 
 ![](https://i.imgur.com/l17rZ7D.png)
 
 當網路會有分區的狀況發生時，也就是說假設今天A, B中間的網路斷線了，A和B會做出怎樣的決策。
 
 1. 繼續分別提供讀寫服務，自然資料就會產生不一致，也就是 AP type。
-2. 停止寫入服務，則資料的部分可以維持一致，但也沒有 Availability 了，這則是 CP type。
+2. 停止部分寫入服務，則資料的部分可以維持一致，但也沒有 Availability 了，這則是 CP type。常見的是會選擇 major 區域來繼續提供寫入，minor 則是關閉寫入。
 3. 而當我們今天預設狀況是網路都是保證正常，則 CA type 就可以很**理想**的完成了。
 
 附註一下，當 Partition tolerance 的處理流程，有點像版本控制。
@@ -206,7 +202,6 @@ Casual consistency 是要求如果兩個 event 有因果關係的話，則要求
 
 ![](https://i.imgur.com/uqE9XxF.png)
 
-
 P2 把 x 從 1 改成 2，因此讀取操作不允許出現 R(x)2,R(x)1 的現象。但是此例中，y 操作没有因果序，所以 P3 讀到 R(y)2, R(y)1 和 P4 讀到 R(y)1, R(y)2 的在 Causal Consistency 是允許的。
 
 **Eventual consistency**
@@ -215,7 +210,3 @@ P2 把 x 從 1 改成 2，因此讀取操作不允許出現 R(x)2,R(x)1 的現�
 
 1. How long is **eventually**?
 2. How do the replicas agree on a value?
-
-
-
-

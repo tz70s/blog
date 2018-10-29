@@ -3,7 +3,7 @@ title = "tz70s"
 theme = "hugo-theme-slim"
 
 [params]
-  Subtitle = "Hacking distributed systems. Feel free to mail me or DM me at twitter if you need, I'll appreciate for any comments on my words."
+  Subtitle = "Hacking distributed systems."
   GithubID = "tz70s"
   TwitterID = "tz70s"
   DisqusShortname = "Tzu-Chiao Yeh"

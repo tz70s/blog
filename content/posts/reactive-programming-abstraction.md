@@ -93,10 +93,34 @@ Reactive Programming 的根源即時從此篇論文，Fran 所延展而來的，
 
 有鑑於此，Fran 認為如果能自動化 **how** of its representation (presentation)，讓使用者專注於 **what** of an interactive animation (modeling)，會是很大的貢獻。進而產生四項對應用的好處：(a) Authoring: programmer 不用專精於底層的 presentation detail，使之可以更有創造力；(b) Optimizability: model-based 所建構的高層資訊可以使得底層 presentation 有 optimization 的機會；(c) Regulation: 一致性的抽象層次管理；(d) Mobility and safety: model-based 可以是 platform independence 的。
 
-Fran 結構了基本的抽象如下 (polymorphic Behavior 和 polymorphic Event)：
+Fran 結構了基本的抽象如下 (semantic function)：
 
 $$at: Behavior_a \to Time \to a$$
 $$occ: Event_a \to Time \times a$$
+
+以 Haskell 表達即為:
+
+```haskell
+type Behavior a = Time -> a
+type Event a = [(Time, a)]
+```
+
+所以簡單來說，Behavior 就是一個 function of time 並回傳一個值，而 event 是一個 list of time/value pairs 來表達 occurrences。
+Time 在原本論文中有一些嚴格定義的數學 property (i.e. lower bound, partial/total ordering)，但簡單來說就是一個以實數 (real number) 來表達的數字，例如 12345。
+
+可見得是很簡單的定義，事實上 Behavior 的結構也是 functional reactive programming 最重要且**唯一**的基礎，剩餘探討的變化事實上都是在**組合**上面。在 [Conal Elliott 2015 年的 talk](https://begriffs.com/posts/2015-07-22-essence-of-frp.html) 中，再次強調了 Functional Reactive Programming 即是包含了重要的兩項原則：(1) Continuous time (2) Precise, simple denotation。他 argue 很多號稱 FRP 的 library or system 都沒有 address 到這兩項原則。第二項原則比較是 general 的 argument，而第一項則是貫穿了 FRP 與其餘 sibling 的最大差別。
+
+看一下示例就會對這個 continuous time 的抽象有感覺:
+
+```haskell
+-- Built in `time` behavior: is basically an identity function map from time value.
+time :: Behavior Time
+time = \t -> t
+
+-- For example, the wiggle reactive variable is the value varied cyclically between -1 and +1.
+wiggle :: Behavior Double
+wiggle = sin (pi * time)
+```
 
 ### C2 - Deprecating Observer Pattern
 
@@ -121,7 +145,9 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 
 ### Q3 - What is Reactive Programming?
 
-## Taste
+## Minimal Prototype
+
+以 reactive-banana 的 haskell library 為啟發，利用 scala 來實作：
 
 ```Scala
 case class Behavior[+T](t: T)

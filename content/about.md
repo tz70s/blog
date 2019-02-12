@@ -7,10 +7,8 @@ Hacking distributed system.
 
 ## Interests
 
-* Scala
-* Akka
-* Play
-* Openwhisk
+* Distributed system. 
+* Distributed and concurrent programming models.
 
 ## Skills
 

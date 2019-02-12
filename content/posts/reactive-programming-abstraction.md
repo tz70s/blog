@@ -31,7 +31,14 @@ Reactive Programming 在現代基於事件驅動程式設計及架構來講，�
 * Multidirectional: 單向或多向的更新。
 * Distributed reactive：於分散式系統內的行為。
 
-在本篇所關注的僅為 Basic Abstraction 和 Lifting Operations 的精確定義和建構來區別較為模糊的 reactive programming 名詞。
+在本篇所關注的僅為 Basic Abstraction 和 Lifting Operations 的精確定義和組合方法來區別較為模糊的 reactive programming 名詞。
+
+如這個 [talk](https://begriffs.com/posts/2016-07-27-tikhon-on-frp.html) 所講的，以下會依照兩種面向來談：
+
+1. Specification (concise definition)
+2. Why it is interesting (motivation/use cases)
+
+Disclaimer: 誠實的說，我不認為我完整理解這裡面精確的內涵，因此警告一下誤觸本篇的讀者請再三思考一下！或請透過 footer 列的 email 來更正及指教。
 
 ## Recap - Why Reactive Programming?
 
@@ -61,7 +68,9 @@ var3 = var1 + var2
 
 這邊可以看出狀態的改變會自動地傳播到計算所構成的網路 (network of dependent computations)。
 
-第一次聽到應該會覺得非常抽象，這邊也沒有很精確的定義，更精確的定義需要有相應的模型和 feature 分類來佐證，這邊要闡述的點在於 Reactive Programming 對於現代事件驅動架構 (Event-first Microservice [6], IoT applications, etc) 的好處：**開發者不用手動處理事件及計算的順序和相依性，提高組合性與降低副作用所帶來的問題**。
+第一次聽到應該會覺得非常抽象，這邊也沒有很精確的定義，更精確的定義需要有相應的模型和 feature 分類來佐證，這邊要闡述的點在於 Reactive Programming 對於現代事件驅動架構 (Event-first Microservice, IoT applications, etc) 的好處：**開發者不用手動處理事件及計算的順序和相依性，提高組合性與降低副作用所帶來的問題**。這也是為什麼 ReactiveX 或其他 Reactive Programming Library 在 web frontend、android 乃至於 web backend 都逐漸受到歡迎。
+
+但這邊需要記住一件事：這是 Reactive Programming 的**好處**，而不是原始設計的 **Motivation**，所以這邊無法給出精確的定義。
 
 Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abstraction** 的部分，那要怎麼表示 `+`? 這就是 **Lifting Operations** 的部分。
 
@@ -77,6 +86,7 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 ### C1 - Functional Reactive Animation 
 
 Reactive Programming 的根源即時從此篇論文，Fran 所延展而來的，如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
+
 1. 手動 framing (基於離散時間)，即便 animation 是 conceptual continuous 的。
 2. 手動捕捉和處理序列的動作輸入 (motion input) 事件。
 3. 手動切割時間並且更新每個隨時間變化的參數。
@@ -94,13 +104,22 @@ $$occ: Event_a \to Time \times a$$
 
 ## Lifting Operations
 
+Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 context 中，簡單類比可以思考為 Optional、Either、Future、IO 等 effect 的計算方式。舉例來說：
+
+```scala
+// Lift a computation into behavior context.
+def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
+```
+
+簡單來說：**這邊就是在講 abstraction 如何 compose**。只是這裡面會有點歷史因素，因為 [4] 所開始時，並沒有現今常用的 typeclasses (i.e. functor, monad, applicative)。
+
 ## TL;DR
 
-### Q1 - What is Reactive Programming?
+### Q1 - What is Functional Reactive Programming?
 
-### Q2 - What is Functional Reactive Programming?
+### Q2 - Reactive Programming v.s. Stream Processing?
 
-### Q3 - Reactive Programming v.s. Stream Processing?
+### Q3 - What is Reactive Programming?
 
 ## Taste
 
@@ -120,4 +139,3 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 3. E. Bainomugisha, A. L. Carreton, T. van Cutsem, S. Mostinckx, and W. de Meuter, “A survey on reactive programming,” ACM Computing Surveys, vol. 45, no. 4, pp. 1–34, Aug. 2013.
 4. C. Elliott and P. Hudak, “Functional reactive animation,” ACM SIGPLAN Notices, vol. 32, no. 8, pp. 263–273, Aug. 1997.
 5. I. Maier and M. Odersky, "Deprecating the Observer Pattern with Scala.React," EPFL-REPORT-176887, 2012.
-6. https://speakerdeck.com/jboner/designing-events-first-microservices

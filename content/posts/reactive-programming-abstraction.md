@@ -10,17 +10,19 @@ categories = []
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML">
 </script>
 
-Reactive Programming 在現代基於事件驅動程式設計及架構來講，根本上來講以去除副作用 (side-effect) 的 Declarative 方式來建構事件的轉換及組合，可以有效降低在 concurrency 下的錯誤和增強組合性 (composability)。這衍伸在工業界如 ReactiveX (RxJava, RxJS, etc)、Reactive Stream Specification 或是如 Future 的建構都有其**影子**。
+Reactive Programming 在現代基於事件驅動程式設計及架構來講，根本上來講以去除副作用 (side-effect) 的 declarative 方式來建構事件的轉換及組合，可以有效降低在 concurrency 下的錯誤和增強組合性 (composability)。這衍伸在工業界如 ReactiveX (RxJava, RxJS, etc)、Reactive Stream Specification 或是如 Future 的建構都有其**影子**。
 
-然而，他的定義在網路上的文章仍十分模糊，例如：
+然而，他的定義從各個出處仍十分模糊且難以讓人理解，例如：
 
 1. Reactive Programming is a programming with asynchronous data stream. [1]
 2. Reactive programming is a declarative programming paradigm concerned with data streams and the propagation of change. [2]
 3. Reactive programming is a programming paradigm that is built around the notion of continuous time-varying values and propagation of change. [3]
 
-除此之外，他的建構模型也會同樣的讓人困惑：`Observable`, `Var`, `Signal`, `Behavior`?
+在加上網路上基於各種**感悟**和**體會**的文章衍伸的不嚴謹考究，讓 Reactive Programming 逐漸成為 buzzword。
 
-這篇文章重新檢視一下這些概念，整理一下從不同文獻而來的資料，並區別且歸類各處的定義 [3][4][5]。最後，示意一段實現 Reactive Programming 的 prototype。
+除了定義以外，他的多種建構模型也會同樣的讓人困惑：`Observable`, `Var`, `Signal`, `Behavior`?
+
+這篇文章重新檢視一下這些概念，整理一下幾篇不同但具代表性的文獻而來的資料，並區別且歸類各處的定義 [3][4][5]。最後，示意一段實現 Reactive Programming 的 prototype。
 
 [3] 是 reactive programming 中最為重量級的 survey，涵蓋更全面於本篇內容 (包含六個 dimension 的探討)，但礙於篇幅，survey paper 的讀者對於特定建構往往很難有深刻的體會。然而，這六個 dimension 可以帶出本篇所要探討的內容：
 
@@ -38,9 +40,9 @@ Reactive Programming 在現代基於事件驅動程式設計及架構來講，�
 1. Specification (concise definition)
 2. Why it is interesting (motivation/use cases)
 
-Disclaimer: 誠實的說，我不認為我完整理解這裡面精確的內涵，因此警告一下誤觸本篇的讀者請再三思考一下！或請透過 footer 列的 email 來更正及指教。
+Disclaimer: 我不敢保證精準且無誤的解釋，因此警告一下誤觸本篇的讀者請再三思考或透過本文列的相關文獻進行參考，有任何想法歡迎且希望能透過我的 email <su3g4284zo6y7@gmail.com> 來更正及指教。
 
-## Recap - Why Reactive Programming?
+## Recap - Why Reactive Programming? (Influence on Modern Software Development)
 
 現代的應用趨於互動性 (interactive) 的型態，由應用內部或外在環境所產生的事件去觸發處理邏輯。因此，這些事件驅動的應用會維持著連續性的與環境互動、處理事件和作出相應的工作如狀態更新等。最常見的如 GUI 應用等等。
 
@@ -83,9 +85,11 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 
 這兩項抽象分別對應到了 [2][3] 上所定義的 continuous time-varying 和 data stream。
 
+但是，**Time** 這個抽象扮演了 reactive programming 中許多不一致的抽象區別 [6]。
+
 ### C1 - Functional Reactive Animation 
 
-Reactive Programming 的根源即時從此篇論文，Fran 所延展而來的，如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
+Reactive Programming 的根源即是從此篇論文，Fran 所延展而來的，如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
 
 1. 手動 framing (基於離散時間)，即便 animation 是 conceptual continuous 的。
 2. 手動捕捉和處理序列的動作輸入 (motion input) 事件。
@@ -96,7 +100,7 @@ Reactive Programming 的根源即時從此篇論文，Fran 所延展而來的，
 Fran 結構了基本的抽象如下 (semantic function)：
 
 $$at: Behavior_a \to Time \to a$$
-$$occ: Event_a \to Time \times a$$
+$$occ: Event_a \to [\ Time \times a\ ]$$
 
 以 Haskell 表達即為:
 
@@ -105,15 +109,20 @@ type Behavior a = Time -> a
 type Event a = [(Time, a)]
 ```
 
-所以簡單來說，Behavior 就是一個 function of time 並回傳一個值，而 event 是一個 list of time/value pairs 來表達 occurrences。
-Time 在原本論文中有一些嚴格定義的數學 property (i.e. lower bound, partial/total ordering)，但簡單來說就是一個以實數 (real number) 來表達的數字，例如 12345。
+所以簡單來說，Behavior 就是一個 function of time 並吐出一個值，而 event 是一個 list of time/value pairs 來表達 occurrences。
+Time 在原本論文中有一些嚴格定義的數學 property (i.e. lower bound, partial/total ordering)，但簡單來說就是一個以實數 (real number) 來表達的數字，例如 12345。([definition in reactive banana](https://github.com/HeinrichApfelmus/reactive-banana/blob/880c9469f95493b9ff19fd5811c3751b5f81fef7/reactive-banana/src/Reactive/Banana/Prim/Types.hs#L198))
+
+```haskell
+-- Time definition in reactive-banana.
+newtype Time = T Integer deriving (Eq, Ord, Show, Read)
+```
 
 可見得是很簡單的定義，事實上 Behavior 的結構也是 functional reactive programming 最重要且**唯一**的基礎，剩餘探討的變化事實上都是在**組合**上面。在 [Conal Elliott 2015 年的 talk](https://begriffs.com/posts/2015-07-22-essence-of-frp.html) 中，再次強調了 Functional Reactive Programming 即是包含了重要的兩項原則：(1) Continuous time (2) Precise, simple denotation。他 argue 很多號稱 FRP 的 library or system 都沒有 address 到這兩項原則。第二項原則比較是 general 的 argument，而第一項則是貫穿了 FRP 與其餘 sibling 的最大差別。
 
 看一下示例就會對這個 continuous time 的抽象有感覺:
 
 ```haskell
--- Built in `time` behavior: is basically an identity function map from time value.
+-- Built in `time` behavior is basically an identity function map from time value.
 time :: Behavior Time
 time = \t -> t
 
@@ -122,9 +131,11 @@ wiggle :: Behavior Double
 wiggle = sin (pi * time)
 ```
 
+回過頭來看，Fran 在設計期時，根本壓根沒有考量事件驅動、Observer Pattern 等前述 Reactive Programming 的**好處**，因此 FRP 他的動機和結構模型其實是非常單純的，他們只共享了一件重要的事實，就是 modeling concurrency programming。
+
 ### C2 - Deprecating Observer Pattern
 
-### C3 - ReactiveX & Monix
+TODO
 
 ## Lifting Operations
 
@@ -135,25 +146,49 @@ Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 cont
 def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 ```
 
-簡單來說：**這邊就是在講 abstraction 如何 compose**。只是這裡面會有點歷史因素，因為 [4] 所開始時，並沒有現今常用的 typeclasses (i.e. functor, monad, applicative)。
+簡單來說：**這邊就是在講 abstraction 如何 compose**。只是這裡面會有點歷史因素，因為 [4] 所開始時，並沒有現今常用的 typeclasses (i.e. functor, monad, applicative) [8]。
+
+這在 [3] 的 survey 中分為三種 strategy: (1) implicit lifting: 隱式且自動的 lifting，往往發生於 dynamic type language 的實現 [7] (2) explicit lifting: 顯式的 call lifting method，多數為 static type language 所需要的 (3) manual lifting: 壓根沒提供。
+
+這邊我主要探討的點是在於 lifting 的 signature 和相關的組合 pattern，主要是在於 static type language (Haskell, Scala, Java) 上的 construction。因此面向與 [3] 所探討的有所不同。
+
+### C1 - Functional Reactive Animation
+
+TODO
+
+### C2 - Deprecating Observer Pattern
+
+TODO
+
+### C3 - Reactive - Modern Revision via Standard Typeclasses
+
+TODO
 
 ## TL;DR
 
 ### Q1 - What is Functional Reactive Programming?
 
-### Q2 - Reactive Programming v.s. Stream Processing?
+Functional Reactive Programming 以 continuous time-varying values 和 automatically propagate value changes 來建構應用程式。
+並且提出數個 combination 的方法來組合 abstraction，而這些方法起初多以 functional programming 來建構 (higher-order function, recursive data types, etc)，因此才會有 functional 為起頭，但他**並不是**單純說 ~~functional reactive programming 為以 functional programming 的方法建構 reactive programming~~。它有非常嚴格且單純的定義和特性基於：**continuous time value**。Time! Time! Time!
 
-### Q3 - What is Reactive Programming?
+### Q2 - What is Reactive Programming?
+
+TODO
+
+### Q3 - Reactive Programming v.s. Stream Processing?
+
+TODO
 
 ## Minimal Prototype
 
 以 reactive-banana 的 haskell library 為啟發，利用 scala 來實作：
 
+TODO
+
 ```Scala
 case class Behavior[+T](t: T)
 
 // Lift a computation into behavior context.
-// Note: this is not an ap in applicative functor.
 // TODO: The newer version of construction with standard typeclass.
 def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 ```
@@ -165,3 +200,6 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 3. E. Bainomugisha, A. L. Carreton, T. van Cutsem, S. Mostinckx, and W. de Meuter, “A survey on reactive programming,” ACM Computing Surveys, vol. 45, no. 4, pp. 1–34, Aug. 2013.
 4. C. Elliott and P. Hudak, “Functional reactive animation,” ACM SIGPLAN Notices, vol. 32, no. 8, pp. 263–273, Aug. 1997.
 5. I. Maier and M. Odersky, "Deprecating the Observer Pattern with Scala.React," EPFL-REPORT-176887, 2012.
+6. B. Christensen, T. Nurkiewicz, "Reactive Programming with RxJava: Creating Asynchronous, Event-Based Applications," O'Reilly Media, Oct. 2016.
+7. G. H. Cooper and S. Krishnamurthi, “Embedding Dynamic Dataflow in a Call-by-Value Language,” in Programming Languages and Systems, Springer Berlin Heidelberg, 2006, pp. 294–308.
+8. C. M. Elliott, “Push-pull functional reactive programming,” in Proceedings of the 2nd ACM SIGPLAN symposium on Haskell - Haskell ’09, 2009.

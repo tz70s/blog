@@ -67,7 +67,7 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 
 ## Basic Abstraction
 
-所有 reactive programming 都是由 [4] 所發展而來的變形，以前述 6 個 dimension 上會有不同的變化，並且詮釋到 programming language 或是 framework 上。
+所有 reactive programming 都是由 [4] 所發展而來的變形，以前述 6 個 dimension 上會有不同的變化，並且詮釋到 programming language 或是 framework 上; 但最基礎的抽象不外乎下列兩種：
 
 1. Behaviors: 為隨著**連續**時間所變化的值 (continuous time-varying value) 的抽象。這最根本的抽象動機是在於 reactive programming [4] 最早的出發點是在於做 animation 或是 robotics，較為關注連續時間(仿類比)的訊號處理。
 2. Events: 為 streams of value changes 的抽象，相對於 Behaviors 為離散的時間點。換言之，這也是於現代更常用到的事件驅動架構下的抽象。
@@ -75,6 +75,18 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 這兩項抽象分別對應到了 [2][3] 上所定義的 continuous time-varying 和 data stream。
 
 ### C1 - Functional Reactive Animation 
+
+Reactive Programming 的根源即時從此篇論文，Fran 所延展而來的，如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
+1. 手動 framing (基於離散時間)，即便 animation 是 conceptual continuous 的。
+2. 手動捕捉和處理序列的動作輸入 (motion input) 事件。
+3. 手動切割時間並且更新每個隨時間變化的參數。
+
+有鑑於此，Fran 認為如果能自動化 **how** of its representation (presentation)，讓使用者專注於 **what** of an interactive animation (modeling)，會是很大的貢獻。進而產生四項對應用的好處：(a) Authoring: programmer 不用專精於底層的 presentation detail，使之可以更有創造力；(b) Optimizability: model-based 所建構的高層資訊可以使得底層 presentation 有 optimization 的機會；(c) Regulation: 一致性的抽象層次管理；(d) Mobility and safety: model-based 可以是 platform independence 的。
+
+Fran 結構了基本的抽象如下 (polymorphic Behavior 和 polymorphic Event)：
+
+$$at: Behavior_a \to Time \to a$$
+$$occ: Event_a \to Time \times a$$
 
 ### C2 - Deprecating Observer Pattern
 
@@ -86,7 +98,9 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 
 ### Q1 - What is Reactive Programming?
 
-### Q2 - Functional Reactive Programming v.s. Reactive Programming?
+### Q2 - What is Functional Reactive Programming?
+
+### Q3 - Reactive Programming v.s. Stream Processing?
 
 ## Taste
 
@@ -95,7 +109,8 @@ case class Behavior[+T](t: T)
 
 // Lift a computation into behavior context.
 // Note: this is not an ap in applicative functor.
-def lift[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
+// TODO: The newer version of construction with standard typeclass.
+def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 ```
 
 ## References

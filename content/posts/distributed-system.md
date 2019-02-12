@@ -63,7 +63,7 @@ categories = []
 * 一樣可以增進 performance，因為有額外的運算資源可以處理 copy of data，也可以 cache。
 * 也可以增進 availability，**bj4**
 
-但 replication 可以讓我們達到 scalability, performance, faultolerance，但則要考慮到 **consistency** 的問題，選擇怎麼樣的 consistency model 是最重要的問題。
+但 replication 可以讓我們達到 scalability, performance, fault tolerance，但則要考慮到 **consistency** 的問題，選擇怎麼樣的 consistency model 是最重要的問題。
 
 ## Up and down the level of abstraction
 

@@ -131,7 +131,17 @@ wiggle :: Behavior Double
 wiggle = sin (pi * time)
 ```
 
+Event 則是代表 occurrence，可以注意到一件事情是它是 product (tuple) with time value，這跟常見的 event-driven programming 不同，反而類似於 stream processing 中 tuple 的 signature：
+
+```haskell
+-- Submit event with time and a value.
+-- In the original paper, this is called constEv.
+once :: Time -> a -> Event a
+```
+
 回過頭來看，Fran 在設計期時，根本壓根沒有考量事件驅動、Observer Pattern 等前述 Reactive Programming 的**好處**，因此 FRP 他的動機和結構模型其實是非常單純的，他們只共享了一件重要的事實，就是 modeling concurrency programming。
+
+註：這邊的語法交叉參考了 [4][9][10]，所以會跟原始論文有些不同，最主要 align Conal Elliott 後來更新的 API 名稱。
 
 ### C2 - Deprecating Observer Pattern
 
@@ -154,7 +164,82 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 
 ### C1 - Functional Reactive Animation
 
-TODO
+Fran 的 host language 是 Haskell，因此 lifting operation 必須 explicit 的給出，這些 lifting 在後來 (C3) 利用 monadic 的 typeclass 來取代了，但當初設計的時候並沒有這些一般性的抽象。
+
+Lifting 其實是很直覺的樣子，利用不同 ary 來 lift variable or function 到 Behavior context 中：
+
+```haskell
+-- Lift a constant value into behavior context.
+lift0 :: a -> Behavior a
+-- A similar construction to fmap.
+-- Lift a function into behavior context.
+lift1 :: (a -> b) -> Behavior a -> Behavior b
+lift2 :: (a -> b -> c) -> Behavior a -> Behavior b -> Behavior c
+```
+
+Time transformation 可以將時間的推移改變：
+
+```haskell
+timeTrans :: Behavior a -> Behavior Time -> Behavior a
+
+-- Applying time is simply an identity function.
+timeTrans a time == a
+-- Slow down time with factor 2.
+timeTrans a (time / 2)
+-- Delay time by 2 seconds.
+timeTrans a (time - 2)
+```
+
+Integration 顧名思義就是積分：
+
+```haskell
+-- a should be an instance of vector space typeclass.
+integral :: VS a => Behavior a -> Time -> Behavior a
+
+-- Integral behavior b by starting time t0.
+integral b t0
+```
+
+$$\int_{t_0}^tb$$
+
+Event 的組合方法：
+
+```haskell
+-- The OR logic.
+(.|.) :: Event a -> Event a -> Event a
+-- Simply said, an fmap.
+(=>) :: Event a -> (a -> b) -> Event b
+-- When an behavior becomes true `after` a specific time (initial time), raise an event.
+predicate :: Behavior Bool -> Time -> Event ()
+-- `Snapshot` a behavior with event a.
+snapshot :: Event a -> Behavior b -> Event (a, b)
+```
+
+Reactivity 則是與 event 的交互 -> 當某個 event 發生時，轉換 behavior!：
+
+```haskell
+switcher :: Behavior a -> Event (Behavior a) -> Behavior a
+
+-- For example,
+-- Transform to blue triggering by left button press event.
+color1 = red 'switcher' (lbp -=> blue)
+-- Transform to blue or yellow by left button press event or key event.
+color2 = red 'switcher' (lbp -=> blue) .|. (key -=> yellow)
+-- Transform to blue once the time is greater than 5.
+color3 = red 'switcher' (predicate (time > 5) -=> blue)
+
+-- Composing event, an fmap.
+(==>) :: Event a -> (a -> b) -> Event b
+-- -=> is an derived operation (syntactic sugar) from composing event,
+-- Similar to $> in functor.
+(-=>) :: Event a -> b -> Event b
+(-=>) e b = e ==> \_ -> b
+```
+
+註：這邊的語法也是交叉參考了 [4][9][10]，所以會跟原始論文有些不同，最主要 align Conal Elliott 後來更新的 API 名稱。
+一些 example 是從 [9] 拿出來的。
+
+小結：記住他的動機是在 animation，後面的 Yampa [11] 等更新雖在組合方法不同，也同樣著重連續時間上的應用 (simulation, robotics)，所以是貫穿這裡面的主軸。**簡單來說，FRP 跟你我想像的 RP 是完全不同的用途！**
 
 ### C2 - Deprecating Observer Pattern
 
@@ -203,3 +288,6 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 6. B. Christensen, T. Nurkiewicz, "Reactive Programming with RxJava: Creating Asynchronous, Event-Based Applications," O'Reilly Media, Oct. 2016.
 7. G. H. Cooper and S. Krishnamurthi, “Embedding Dynamic Dataflow in a Call-by-Value Language,” in Programming Languages and Systems, Springer Berlin Heidelberg, 2006, pp. 294–308.
 8. C. M. Elliott, “Push-pull functional reactive programming,” in Proceedings of the 2nd ACM SIGPLAN symposium on Haskell - Haskell ’09, 2009.
+9. Z. Wan and P. Hudak, “Functional reactive programming from first principles,” ACM SIGPLAN Notices, vol. 35, no. 5, pp. 242–252, May 2000.
+10. https://begriffs.com/posts/2015-07-22-essence-of-frp.html
+11. A. Courtney, H. Nilsson, and J. Peterson, “The Yampa arcade,” in Proceedings of the ACM SIGPLAN workshop on Haskell - Haskell ’03, 2003.

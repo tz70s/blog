@@ -149,7 +149,7 @@ TODO
 
 ## Lifting Operations
 
-Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 context 中，簡單類比可以思考為 Optional、Either、Future、IO 等 effect 的計算方式。舉例來說：
+Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 context 中，簡單類比可以思考為 Optional、Either、Future、IO 等 higher-kinded types 的計算方式。舉例來說：
 
 ```scala
 // Lift a computation into behavior context.

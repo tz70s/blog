@@ -279,7 +279,8 @@ The benchamrk result is definitely meaningless, it's heavily overloaded to run 4
   Socket errors: connect 88542, read 0, write 0, timeout 292
 Requests/sec:      1.08
 Transfer/sec:     844.07B
-
+```
+```bash
 4 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     1.38s     1.87s    9.79s    82.91%
@@ -318,7 +319,6 @@ I've also found pause/resume bug during high load, I'll described in the issue s
   Non-2xx or 3xx responses: 27
 Requests/sec:    170.62
 Transfer/sec:     97.80KB
-
 ```
 
 #### New architecture: 4 actions

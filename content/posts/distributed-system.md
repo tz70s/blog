@@ -8,7 +8,7 @@ categories = []
 
 [Distributed Systems for Fun and Profit](http://book.mixu.net/distsys/) 是本分散式系統的書，短小精悍目標是涵蓋所有分散式系統的概念和點出一些關鍵的演算法，然後這是我的筆記。
 
-## Basics
+# Basics
 
 基本電腦系統可以分為兩種 task 需要去完成
 
@@ -17,17 +17,17 @@ categories = []
 
 分散式系統的目標是要解決當我們系統 scale up 去處理這些 task ，並且而後發生的種種 trade-off。
 
-### Scalability
+## Scalability
 > is the ability of a system, network, or process, to handle a growing amount of work in a capable manner or its ability to be enlarged to accommodate that growth
 
 **Growth** 可以從很多面向來看，但最重要相關的觀點用以來量測就是`performance and availability`
 
-### Performance (and latency)
+## Performance (and latency)
 > is characterized by the amount of useful work accomplished by a computer system compared to the time and resources used
 
 從字面上的意思來看就是工作完成/花的時間&用了多少 resource，而這當然在不同 context 下會有不同的樣子，如 `response time, throughput, utilization` 都可以視為 performance 的 metrics，只不過當然這些彼此都可能有 tradeoff 存在，例如 low response time 和 high throughput 不同時成立。
 
-### Availability (and fault tolerance)
+## Availability (and fault tolerance)
 > the proportion of time a system is in a functioning condition. If a user cannot access the system, it is said to be unavailable
 
 `Availability = uptime / (uptime + downtime)`
@@ -35,19 +35,19 @@ categories = []
 而 **Fault tolerance** 代表的是
 > ability of a system to behave in a well-defined manner once faults occur
 
-### Abstraction and Models
+## Abstraction and Models
 
-**Abstraction**
+### Abstraction
 
 * 分散式系統的目標就是想要變成一個**像是單一系統**的系統
 
-**Model**
+### Model
 
 * System model (asynchronous / synchronous)
 * Failure model (crash-fail, partitions, Byzantine)
 * Consistency model (strong eventual)
 
-### Design techniques: partition and replicate
+## Design techniques: partition and replicate
 
 ![Partition and Replication](https://i.imgur.com/Eh9aQr6.jpg)
 
@@ -65,11 +65,11 @@ categories = []
 
 但 replication 可以讓我們達到 scalability, performance, fault tolerance，但則要考慮到 **consistency** 的問題，選擇怎麼樣的 consistency model 是最重要的問題。
 
-## Up and down the level of abstraction
+# Up and down the level of abstraction
 
 **Abstraction** 是基於忽略一些系統的面向來做出的 **fake** ，所以 system model 是規格讓我們知道可以做到的事情，與沒辦法做到的事情。
 
-### A system model
+## A system model
 
 Programs 在分散式系統中
 
@@ -85,7 +85,7 @@ Programs 在分散式系統中
 * 訊息會掉包
 * 每個 node 的 clock 可能不同步
 
-**System model**
+### System model
 
 > a set of assumptions about the environment and facilities on which a distributed system is implemented
 
@@ -122,7 +122,7 @@ No timing assumptions
 1. no bound on message transimission delay
 2. no useful clocks
 
-### The consensus problem
+## The consensus problem
 
 Consensus problem 其實主要是在講**同意**這件事情
 
@@ -131,7 +131,8 @@ Consensus problem 其實主要是在講**同意**這件事情
 3. Termination : 全部的 process 最終會得出一個 decision 。
 4. Validity : 如果全部的 process 提出相同的值 V，則決定 V。
 
-### The FLP impossibility result
+## The FLP impossibility result
+
 假設
 
 * Asynchrouns system model (no timing assumtion)
@@ -140,7 +141,7 @@ Consensus problem 其實主要是在講**同意**這件事情
 
 結論 : **不要浪費時間在異步系統上解決consensus problem**，即便是在以上這麼小的假設。
 
-### The CAP theorem
+## The CAP theorem
 
 * Consistency : 這裡指的是 Strong consistency
 * Availability : 整個系統可以持續讀寫(自然是不包含 consistency )
@@ -174,24 +175,29 @@ Consensus problem 其實主要是在講**同意**這件事情
 
 ![](https://i.imgur.com/eH8o6Ur.jpg)
 
-### Consistency models
+## Consistency models
+
 Consistency models 可以被分為兩種 type
 
 * Strong consistency model
     * Linearizable consistency
     * Sequential consistency
+
 * Weak consistency model
     * Client-centric consistency model
     * Casual consistency: strongest model available
     * Eventual consistency model
 
-**Linearizable consistency**
+### Linearizable consistency
+
 所有 operation 與 global real-time ordering operation 是一致的，也就是有一個**絕對時間**的存在，且這些 operation 都是按照絕對時間來排序。
 
-**Sequential consistency**
+### Sequential consistency
+
 將 global real-time ordering 放寬，允許不用按照絕對時間排序，但也保證 individual 上的順序是滿足 program oreder 的，且全部 node 看到的都是相同的順序即可。
 
-**Casual consistency**
+### Casual consistency
+
 有因果關係存在
 
 * 同一個 node 中的 event A 早於 B (A<B)
@@ -204,7 +210,7 @@ Casual consistency 是要求如果兩個 event 有因果關係的話，則要求
 
 P2 把 x 從 1 改成 2，因此讀取操作不允許出現 R(x)2,R(x)1 的現象。但是此例中，y 操作没有因果序，所以 P3 讀到 R(y)1, R(y)2 和 P4 讀到 R(y)2, R(y)1 的在 Causal Consistency 是允許的。
 
-**Eventual consistency**
+### Eventual consistency
 
 系統在最終會保持一致性，但是這也會引發我們需要去認知的問題。
 

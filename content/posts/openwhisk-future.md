@@ -10,9 +10,9 @@ OpenWhisk community is nowadays getting more consistent on the new design of arc
 
 This post may have two kinds of target audiences, OpenWhisk community, GSoC mentors and reviewers:
 
-**For OpenWhisk community:**
+### For OpenWhisk community:
 
-This objectives of this post and protoype:
+The objective of this post and protoype:
 
 * Draft an experimental prototype of OpenWhisk future architecture, for knowing all issues might meet.
 * Hope to help community migrate to the futrue architecture smoothly.
@@ -27,17 +27,17 @@ Something didn't implement/discuss in this post and experiment:
 * Controller HA.
 * Scheduler persistence.
 
-**For GSoC mentors (Rodric and Carlos) and reviewers:**
+### For GSoC mentors (Rodric and Carlos) and reviewers:
 
 This will be my final result during GSoC progress. But in GSoC guidance, please refer to [here for non-technical description](https://tz70s.github.io/posts/gsoc-2018/).
 
 Full code can be found [here](https://github.com/tz70s/incubator-openwhisk/tree/whisk-future-rebase).
 
-## Architecture recap
+# Architecture recap
 
 The [Future Architecture proposal](https://cwiki.apache.org/confluence/display/OPENWHISK/OpenWhisk+future+architecture) proposed by Markus Thommes integrated lots of communities' idea; play a great start to a new performant architecture.
 
-## Steps to produce
+# Steps to produce
 
 Instead of prototyping from clean slate, it's quite more challenged established via current codebase, but take more advantages:
 
@@ -77,23 +77,23 @@ The overall LoadBalancer workflow as following:
 
 The code module contains:
 
-#### Singleton LoadBalancer
+## Singleton LoadBalancer
 
 SingletonLoadBalancer implements LoadBalancer trait for SPI infra. Contrast to prior ShardingContainerLoadBalancer, we'll contain nothing about scheduling logic; it'll simply look up and pass requests. When a request come in, it'll lookup container lists, which contains some context related to container and in-flight concurrent requests. There will be some larger value once concurrent activation processing got finished, but current, the in-flight concurrent request can be only 0 or 1. That is, if a request reach 0 concurrency value, it reuse the existed free container and send request into ContainerProxy, or else, it'll send message to OverflowProxy for resource requisition.
 
 <script src="https://gist.github.com/tz70s/1223bdb0e61543ece861e306c9fb50ca.js"></script>
 
-#### Overflow Proxy
+## Overflow Proxy
 
 Once OverflowProxy get message, it'll queue into Overflow Buffer. I didn't take external shared queue here, which many folks may concerned. But for Controller HA mode, it'll be required and can open up work-stealing capability. Anyway, the current implementation when receiving OverflowActivationMessage, queue in OverflowBuffer with some sendor and tracing context, and proxy to SingletonScheduler; and once it gets back with ContainerAllocation message, it'll pipe back to SingletonLoadBalancer.
 
-#### Container Proxy
+## Container Proxy
 
 ContainerProxy is similar to prior invoke one, but I'll only manage with Suspend/Resume states and face to a warmed container. Therefore, the mission on ContainerProxy will operate suspend/resume (depends on pauseGrace settings) and call /run route of containers. Finally, pipe back result to SingletonLoadBalancer.
 
 In order to make sure the correctness, I've introduced two synchronized values here. It'll cause some problems while an **in-flight** activation is running but timer tick triggers and pause container. Therefore, it takes some paused here.
 
-#### ShareStates Proxy
+## ShareStates Proxy
 
 Concerned some proposal didn't mention, the real Scheduling algorithm; We don't have any workload-dispatch related logics in Controller side, and make Scheduler holds all logics. However, what states Scheduler should know?
 
@@ -104,7 +104,7 @@ Consider building the prior busy/free/prewarmed pooling model:
 
 ShareStatesProxy do this: when Container gets pause/suspend, it'll notify Scheduler that container is busy or free. Once a deletion is being taken, it'll choose up from free pool (see more in Scheduler section) and notify back with ShareStatesProxy. Hence, ShareStatesProxy take an eval sharable container lists (actually a TrieMap) for updating and sharing with main SingletonLoadBalancer.
 
-#### Container Factory Protocol
+## Container Factory Protocol
 
 Overall for interacting with Scheduler, the messages between Controller and Scheduler. You can see that the relations between Controller and Scheduler.
 
@@ -120,7 +120,7 @@ I didn't deal this with Kubernetes. However, the approach may be similar and muc
 
 To guarantee strong consistency for container selection in controller. The scheduler will be (contains) a cluster singleton to resolve container selection. [Akka cluster singleton](https://doc.akka.io/docs/akka/2.5.14/cluster-singleton.html) is introduced here: ClusterSingletonManager will sits in Scheduler and ClusterSingletonProxy will sit in both Controller and Scheduler to access the singleton. You can checkout the doc for usage and [here's my example with less noise](https://github.com/tz70s/cluster-singleton-ex) compared to Akka provided, which contains a basic singleton and proxy setup with migration observation guide. This enabled us to use with some convenience, i.e. failure recovery, message buffering, etc.
 
-### Container Pool Model
+## Container Pool Model
 
 Basically, I didn't change the model of container pool: busy/free/prewarm model. Simply review on this model with additional context introduce from new LoadBalancer design:
 
@@ -138,7 +138,7 @@ The free and busy states are notified via ShareStatesProxy we have described abo
 
 The algorithm is definitely not optimal, but we can first leave out previous problem: invokers have no visibility with each other.
 
-### Container Orchestration 
+## Container Orchestration 
 
 The Container Pool Model is based on single pool abstraction, to accomplish this model. We still need to have internal real resource allocation. The approach will be distincted by two orchestration choices: Kubernetes and Native (Docker).
 
@@ -164,7 +164,7 @@ There are some potential ways:
 
 Obviously, it's arbitrary and not applicable for option 2. I choose 3 from now.
 
-### New Container Trait 
+## New Container Trait 
 
 The responsibility on operating containers are segarated now: 
 
@@ -176,7 +176,7 @@ I've splitted these into several different traits: **ContainerRunnable** for Con
 
 [You can find more detail here.](https://github.com/tz70s/incubator-openwhisk/blob/whisk-future-rebase/common/scala/src/main/scala/whisk/core/containerpool/future/Container.scala)
 
-### Issues Remain
+## Issues Remain
 
 1. Perfromance bottleneck: Cluster singleton can easily reach performance bottleneck, therefore, we should try our best to reduce workload on it. First, the sophisticated scheduling should be scalable on large scale nodes: in Kubernetes, the scheduling is done by kube-scheduler (within API server). The better way is that Docker side should be also standalone as well, we can figure out later. Second, in which proposal didn't mention, to keep the free/prewarm/busy model the pause/unpause messages handling; they will be sent by every pause grace (500ms default) reach or new calls arrived. 
 
@@ -218,17 +218,17 @@ Will return status 204 on success, 500 on general failure and 400 on log parsing
 
 That's all, there's only small changed from previous version; for more implementation detial, you can [refer to here](https://github.com/tz70s/incubator-openwhisk-deploy-kube/tree/refactor-invoker-agent/docker/invoker-agent).
 
-## Performance tests
+# Performance tests
 
 It's sadly I don't have available resource to test the performance, simply use my macbook (2017, Core i5 2.3GHz, 8GB RAM, 128GB SSD) for benchmarking. For many reason (i.e. not sufficient resource, no runc optimization, resource interference, etc.), the performance is poor and not that accurate. Therefore, I can't give the arbitrary conclusion on performance improvement; but we can observer further issues during load tests.
 
-#### Environment
+## Environment
 
 * MacBookPro 2017, Core i5 2.3GHz, 8GB RAM, 128GB SSD.
 * Docker for mac, version 18.06.0-ce-mac69, edge channel.
 * Tune docker machine to maximum value (4 vCPU, 8GB RAM)
 
-#### Setup
+## Setup
 
 For comparision, I've setup:
 
@@ -242,7 +242,7 @@ For comparision, I've setup:
 
 Note that I've tried many times, the results are similar.
 
-#### Current architecture: 1 action
+## Current architecture: 1 action
 
 As you can see, the resources are definitely overloaded. Note that it's not an accurate **average** latency under normal throttling.
 
@@ -261,7 +261,7 @@ Requests/sec:     53.11
 Transfer/sec:     40.59KB
 ```
 
-#### Current architecture: 4 actions
+## Current architecture: 4 actions
 
 The benchamrk result is definitely meaningless, it's heavily overloaded to run 4 actions. But the main reason leads to poor performance on 4 actions we already knows is the problem on no visiblity between Invokers. In addition, I've found that there are easily causing failure starting from clean system, therefore, I've post a pure start and a re-run result.
 
@@ -298,7 +298,7 @@ Transfer/sec:      8.36KB
 
 Video records for observation:
 
-#### New architecture: 1 actions
+## New architecture: 1 actions
 
 In the new architecture, for 1 action, I think it's arbitrary to say that it has greater performance, because of lacks of plenty functionalities (no logs collection, no ssl termination, etc). Please keep doubt to this estimated result. Note that you can see that there are some Non-2xx or 3xx responses, they are system rejection for overloaded, for early failure from scheduler, if all pools are in busy.
 
@@ -321,7 +321,7 @@ Requests/sec:    170.62
 Transfer/sec:     97.80KB
 ```
 
-#### New architecture: 4 actions
+## New architecture: 4 actions
 
 As mentioned above, there is a pause/resume bug, therefore, the statistic is not accurate. Discuss below.
 
@@ -342,7 +342,7 @@ Requests/sec:     27.56
 Transfer/sec:     16.86KB
 ```
 
-### Latency
+## Latency
 
 I've used tracing support with Jaegar UI for troubleshooting and latency observation. Jaegar is compatible with Zipkin trace and painless deployment.
 
@@ -360,36 +360,36 @@ The bottleneck is initialization.
 
 ![Image](/images/latency-cold-scheduler.png)
 
-## Conclusion & Discussion
+# Conclusion & Discussion
 
 There's still plenty of things not being done, and the approach is not ideal either; I'll keep work on this and hopes this help some OpenWhisk folks to join brain storming and find out the consistent design on future architecture of OpenWhisk.
 
-### Issues
+## Issues
 
-**It's neccessary to provide a strong consistency (warmed) container lists to be kept in each controller, how do we deal with this?**
+### It's neccessary to provide a strong consistency (warmed) container lists to be kept in each controller, how do we deal with this?
 
 Using cluster singleton in Scheduler is mainly for providing strong consistency on managing containers' states. However, lookup states store in Scheduler will lead to poor performance (gains latency and makes singleton busy).
 
 To release the burden and latency on lookup Scheduler, we can keep only owned container lists (actually a map) in each in-memory store (as I did and proposal mentioned that). However, introduce cache will cause temporary inconsistent. How do we solve this?
 
-**How do we deal with overflow messages?**
+### How do we deal with overflow messages?
 
 There's not consistent here due to issues related to message queues (i.e. unbounded topics, using pub/sub, etc.). I'll experiment these further as well.
 
-**Problematics on ContainerProxy**
+### Problematics on ContainerProxy
 
 In order to guarantee correctness, I've used blocking Await in ContainerProxy. There's a potential problem is: when an activation is running, we can't call pause on it. I'll keep figure out this problem as soon as possible.
 
-**States for free/busy pool recognition?**
+### States for free/busy pool recognition?
 
 Is the state related to free/busy == pause/resume?
 
 There's a potential tradeoff is: if pause/resume becoming bottleneck, we would like to use greater pause grace. However, greater pause grace means that the container pool is easier to be full of busy states. Ideally, in runc optimization, there's no problem at all. However, in docker version pause/suspend, this may need to be concerned.
 
-**Peek container requisition.**
+### Peek container requisition.
 
 When burst requests are coming (plenty of cold start occurred), the Scheduler will response to over-estimated resources to system. We should further introduce scheduling algorithm improvement. However, it's great that we have a single place (Scheduler) to consider and experiment overall resource allocation. 
 
-**Will it be performance bottleneck on Scheduler Singleton?**
+### Will it be performance bottleneck on Scheduler Singleton?
 
 Actually, Scheduler can not only keep create and deletion states; as more states come in, will it be a performance bottleneck on large scale system?

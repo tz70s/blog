@@ -76,7 +76,7 @@ var3 = var1 + var2
 
 Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abstraction** 的部分，那要怎麼表示 `+`? 這就是 **Lifting Operations** 的部分。
 
-## Basic Abstraction
+# Basic Abstraction
 
 所有 reactive programming 都是由 [4] 所發展而來的變形，以前述 6 個 dimension 上會有不同的變化，並且詮釋到 programming language 或是 framework 上; 但最基礎的抽象不外乎下列兩種：
 
@@ -87,7 +87,7 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 
 但是，**Time** 這個抽象扮演了 reactive programming 中許多不一致的抽象區別 [6]。
 
-### C1 - Functional Reactive Animation 
+## C1 - Functional Reactive Animation 
 
 Reactive Programming 的根源即是從此篇論文，Fran 所延展而來的，如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
 
@@ -143,11 +143,11 @@ once :: Time -> a -> Event a
 
 註：這邊的語法交叉參考了 [4][9][10]，所以會跟原始論文有些不同，最主要 align Conal Elliott 後來更新的 API 名稱。
 
-### C2 - Deprecating Observer Pattern
+## C2 - Deprecating Observer Pattern
 
 TODO
 
-## Lifting Operations
+# Lifting Operations
 
 Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 context 中，簡單類比可以思考為 Optional、Either、Future、IO 等 higher-kinded types 的計算方式。舉例來說：
 
@@ -162,7 +162,7 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 
 這邊我主要探討的點是在於 lifting 的 signature 和相關的組合 pattern，主要是在於 static type language (Haskell, Scala, Java) 上的 construction。因此面向與 [3] 所探討的有所不同。
 
-### C1 - Functional Reactive Animation
+## C1 - Functional Reactive Animation
 
 Fran 的 host language 是 Haskell，因此 lifting operation 必須 explicit 的給出，這些 lifting 在後來 (C3) 利用 monadic 的 typeclass 來取代了，但當初設計的時候並沒有這些一般性的抽象。
 
@@ -241,44 +241,30 @@ color3 = red 'switcher' (predicate (time > 5) -=> blue)
 
 小結：記住他的動機是在 animation，後面的 Yampa [11] 等更新雖在組合方法不同，也同樣著重連續時間上的應用 (simulation, robotics)，所以是貫穿這裡面的主軸。**簡單來說，FRP 跟你我想像的 RP 是完全不同的用途！**
 
-### C2 - Deprecating Observer Pattern
+## C2 - Deprecating Observer Pattern
 
 TODO
 
-### C3 - Reactive - Modern Revision via Standard Typeclasses
+## C3 - Reactive - Modern Revision via Standard Typeclasses
 
 TODO
 
-## TL;DR
+# TL;DR
 
-### Q1 - What is Functional Reactive Programming?
+## Q1 - What is Functional Reactive Programming?
 
 Functional Reactive Programming 以 continuous time-varying values 和 automatically propagate value changes 來建構應用程式。
 並且提出數個 combination 的方法來組合 abstraction，而這些方法起初多以 functional programming 來建構 (higher-order function, recursive data types, etc)，因此才會有 functional 為起頭，但他**並不是**單純說 ~~functional reactive programming 為以 functional programming 的方法建構 reactive programming~~。它有非常嚴格且單純的定義和特性基於：**continuous time value**。Time! Time! Time!
 
-### Q2 - What is Reactive Programming?
+## Q2 - What is Reactive Programming?
 
 TODO
 
-### Q3 - Reactive Programming v.s. Stream Processing?
+## Q3 - Reactive Programming v.s. Stream Processing?
 
 TODO
 
-## Minimal Prototype
-
-以 reactive-banana 的 haskell library 為啟發，利用 scala 來實作：
-
-TODO
-
-```scala
-case class Behavior[+T](t: T)
-
-// Lift a computation into behavior context.
-// TODO: The newer version of construction with standard typeclass.
-def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
-```
-
-## References
+# References
 
 1. https://gist.github.com/staltz/868e7e9bc2a7b8c1f754
 2. https://en.wikipedia.org/wiki/Reactive_programming

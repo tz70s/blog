@@ -22,7 +22,7 @@ Features:
 
 * Compositional and declarative approach to describing distributed computations, by **monad**.
 
-```F#
+```fsharp
 # a fork-join pattern
 cloud {
   let job1 = cloud { return 1 }
@@ -44,7 +44,7 @@ The programming model provides the ability to declare abstract and modal express
 
 Asnychronous workflows avoid the need of explicit callbacks, 
 
-```F#
+```fsharp
 let download (url : Uri) = async {
   let http = new System.Net.WebClient()
   # The let! denotes the callback passed to the right-hand-side operation.
@@ -56,7 +56,7 @@ let download (url : Uri) = async {
 
 Composition,
 
-```F#
+```fsharp
 let workflow = async {
   let! results =
     Async.Parallel
@@ -84,7 +84,7 @@ Here's some example code snippet in paper,
 
 ### MapReduce
 
-```F#
+```fsharp
 let rec mapReduce (map: 'T -> Cloud<'R>)
                   (reduce: 'R -> 'R -> Cloud<'R>)
                   (identity: 'R)
@@ -106,7 +106,7 @@ let rec mapReduce (map: 'T -> Cloud<'R>)
 
 ### Nondeterministic Computation
 
-```F#
+```fsharp
 let exists (f : 'T -> Cloud<bool>) (inputs: 'T []) =
   cloud {
     let pick (x : 'T) =
@@ -129,7 +129,7 @@ There are cases where constraining the execution of a cloud workflow in the cont
 
 The local combiantor transforms any given cloud workflow into an equivalent expression that executes in a strictly local context.
 
-```F#
+```fsharp
 let rec fib n depth =
   cloud {
     if depth = 0 then return! Cloud.ToLocal <| fib n depth
@@ -148,7 +148,7 @@ This is not represented as ddata in Akka (CRDT) or any other else. It's an abstr
 
 It's an trivial abstraction for modern application handling large blob size entity, i.e. in serverless manner, we can only pass references that point to blob storage.
 
-```F#
+```fsharp
 let getRef () : Cloud<CloudRef<string []>> =
   cloud {
     let! data = download "http://a-big-data-place"
@@ -169,7 +169,7 @@ MBrace transparently manages storage, while it also aggressively caches local co
 
 What more: scoped resources, offerring a mechanism for performing deallocations in a scope. The data constructs that implement the `CloudDisposable` interface which bind to `use!` keyword.
 
-```F#
+```fsharp
 cloud {
   # Ensure deallocation from the global store as soon as the workflow has exited its scope!
   use! cref = CloudRef.New [| 1 .. 10000000 |]

@@ -270,7 +270,7 @@ TODO
 
 TODO
 
-```Scala
+```scala
 case class Behavior[+T](t: T)
 
 // Lift a computation into behavior context.

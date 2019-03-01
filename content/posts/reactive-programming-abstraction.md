@@ -145,7 +145,41 @@ once :: Time -> a -> Event a
 
 ## C2 - Deprecating Observer Pattern
 
-TODO
+Deprecating Observer Pattern [5] 這篇論文的起初出發點就是為了解決 callback 的問題，以 GUI 的 use case 帶起，可以說是比較接近以 event 為出發點的方式來做 abstraction。
+這就變得說是他與 FRP 的差別在於 time 並不是他最主要操作的對象，也比較符合前述 reactive programming 的定義範圍。底下會以 Scala.React 來代換這篇論文。
+
+首先，Scala.React 的第一個 abstraction 單位就是 EventStream，利用 Events[T] 這個 core type 來做 reactive abstraction，以及以 EventSource 內建的 closure 來轉換 external event：
+
+```scala
+// Due to the original paper lacks of signature, I guess the approximate signature of this abstraction. 
+trait Events[+T] {
+  def emit[U >: T](value: T): Unit
+}
+// For adapting original source.
+class EventSource[+T](private val closure: Events[T] => Unit) extends Events[T]
+
+// For example, this is a common way to adapt with external events by register hooks in callbacks.
+val actionPerformed: Events[Action] = new EventSource[Action] { source =>
+  this.addActionListener(new ActionListener {
+    def actionPerformed(e: ActionEvent) = source emit getAction
+  })
+}
+```
+
+除此之外，他也有 Signal 上的 abstraction，也就是 FRP 中的 Behavior:
+
+```scala
+trait Signal[+T] {
+  def apply(): T
+  def now: T
+}
+
+// Var is an instance of signal.
+class Var[A](init: A) extends Signal[A] {
+  def update(newValue: A): Unit = ...
+}
+```
+
 
 # Lifting Operations
 

@@ -11,4 +11,3 @@ cd ..
 git add .
 git commit -m "New blog post"
 git push
-

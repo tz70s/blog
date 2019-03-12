@@ -40,8 +40,6 @@ Reactive Programming 在現代基於事件驅動程式設計及架構來講，�
 1. Specification (concise definition)
 2. Why it is interesting (motivation/use cases)
 
-Disclaimer: 我不敢保證精準且無誤的解釋，因此警告一下誤觸本篇的讀者請再三思考或透過本文列的相關文獻進行參考，有任何想法歡迎且希望能透過我的 email <su3g4284zo6y7@gmail.com> 來更正及指教。
-
 ## Recap - Why Reactive Programming? (Influence on Modern Software Development)
 
 現代的應用趨於互動性 (interactive) 的型態，由應用內部或外在環境所產生的事件去觸發處理邏輯。因此，這些事件驅動的應用會維持著連續性的與環境互動、處理事件和作出相應的工作如狀態更新等。最常見的如 GUI 應用等等。
@@ -76,7 +74,7 @@ var3 = var1 + var2
 
 Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abstraction** 的部分，那要怎麼表示 `+`? 這就是 **Lifting Operations** 的部分。
 
-# Basic Abstraction
+# C1 - Functional Reactive Animation
 
 所有 reactive programming 都是由 [4] 所發展而來的變形，以前述 6 個 dimension 上會有不同的變化，並且詮釋到 programming language 或是 framework 上; 但最基礎的抽象不外乎下列兩種：
 
@@ -87,9 +85,9 @@ Ok，那這樣的結構中，我們要怎麼表示 `var`? 這就是 **Basic Abst
 
 但是，**Time** 這個抽象扮演了 reactive programming 中許多不一致的抽象區別 [6]。
 
-## C1 - Functional Reactive Animation 
+## Basic Abstraction
 
-Reactive Programming 的根源即是從此篇論文，Fran 所延展而來的，如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
+如前面所說的，Fran 的目的在於降低 programming in animation 所需要的 boilerplate，包含：
 
 1. 手動 framing (基於離散時間)，即便 animation 是 conceptual continuous 的。
 2. 手動捕捉和處理序列的動作輸入 (motion input) 事件。
@@ -114,7 +112,7 @@ Time 在原本論文中有一些嚴格定義的數學 property (i.e. lower bound
 
 ```haskell
 -- Time definition in reactive-banana.
-newtype Time = T Integer deriving (Eq, Ord, Show, Read)
+newtype Time = Time Integer deriving (Eq, Ord, Show, Read)
 ```
 
 可見得是很簡單的定義，事實上 Behavior 的結構也是 functional reactive programming 最重要且**唯一**的基礎，剩餘探討的變化事實上都是在**組合**上面。在 [Conal Elliott 2015 年的 talk](https://begriffs.com/posts/2015-07-22-essence-of-frp.html) 中，再次強調了 Functional Reactive Programming 即是包含了重要的兩項原則：(1) Continuous time (2) Precise, simple denotation。他 argue 很多號稱 FRP 的 library or system 都沒有 address 到這兩項原則。第二項原則比較是 general 的 argument，而第一項則是貫穿了 FRP 與其餘 sibling 的最大差別。
@@ -143,45 +141,9 @@ once :: Time -> a -> Event a
 
 註：這邊的語法交叉參考了 [4][9][10]，所以會跟原始論文有些不同，最主要 align Conal Elliott 後來更新的 API 名稱。
 
-## C2 - Deprecating Observer Pattern
-
-Deprecating Observer Pattern [5] 這篇論文的起初出發點就是為了解決 callback 的問題，以 GUI 的 use case 帶起，可以說是比較接近以 event 為出發點的方式來做 abstraction。
-這就變得說是他與 FRP 的差別在於 time 並不是他最主要操作的對象，也比較符合前述 reactive programming 的定義範圍。底下會以 Scala.React 來代換這篇論文。
-
-首先，Scala.React 的第一個 abstraction 單位就是 EventStream，利用 Events[T] 這個 core type 來做 reactive abstraction，以及以 EventSource 內建的 closure 來轉換 external event：
-
-```scala
-// Due to the original paper lacks of signature, I guess the approximate signature of this abstraction. 
-trait Events[+T] {
-  def emit[U >: T](value: T): Unit
-}
-// For adapting original source.
-class EventSource[+T](private val closure: Events[T] => Unit) extends Events[T]
-
-// For example, this is a common way to adapt with external events by register hooks in callbacks.
-val actionPerformed: Events[Action] = new EventSource[Action] { source =>
-  this.addActionListener(new ActionListener {
-    def actionPerformed(e: ActionEvent) = source emit getAction
-  })
-}
-```
-
-除此之外，他也有 Signal 上的 abstraction，也就是 FRP 中的 Behavior:
-
-```scala
-trait Signal[+T] {
-  def apply(): T
-  def now: T
-}
-
-// Var is an instance of signal.
-class Var[A](init: A) extends Signal[A] {
-  def update(newValue: A): Unit = ...
-}
-```
 
 
-# Lifting Operations
+## Lifting Operations
 
 Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 context 中，簡單類比可以思考為 Optional、Either、Future、IO 等 higher-kinded types 的計算方式。舉例來說：
 
@@ -195,8 +157,6 @@ def lift1[A, B](f: A => B): Behavior[A] => Behavior[B] = ???
 這在 [3] 的 survey 中分為三種 strategy: (1) implicit lifting: 隱式且自動的 lifting，往往發生於 dynamic type language 的實現 [7] (2) explicit lifting: 顯式的 call lifting method，多數為 static type language 所需要的 (3) manual lifting: 壓根沒提供。
 
 這邊我主要探討的點是在於 lifting 的 signature 和相關的組合 pattern，主要是在於 static type language (Haskell, Scala, Java) 上的 construction。因此面向與 [3] 所探討的有所不同。
-
-## C1 - Functional Reactive Animation
 
 Fran 的 host language 是 Haskell，因此 lifting operation 必須 explicit 的給出，這些 lifting 在後來 (C3) 利用 monadic 的 typeclass 來取代了，但當初設計的時候並沒有這些一般性的抽象。
 
@@ -275,13 +235,44 @@ color3 = red 'switcher' (predicate (time > 5) -=> blue)
 
 小結：記住他的動機是在 animation，後面的 Yampa [11] 等更新雖在組合方法不同，也同樣著重連續時間上的應用 (simulation, robotics)，所以是貫穿這裡面的主軸。**簡單來說，FRP 跟你我想像的 RP 是完全不同的用途！**
 
-## C2 - Deprecating Observer Pattern
+# C2 - Deprecating Observer Pattern
 
-TODO
+Deprecating Observer Pattern [5] 這篇論文的起初出發點就是為了解決 callback 的問題，以 GUI 的 use case 帶起，可以說是比較接近以 event 為出發點的方式來做 abstraction。
+這就變得說是他與 FRP 的差別在於 time 並不是他最主要操作的對象，也比較符合前述 reactive programming 的定義範圍。底下會以 Scala.React 來代換這篇論文。
 
-## C3 - Reactive - Modern Revision via Standard Typeclasses
+## Basic Abstraction
 
-TODO
+首先，Scala.React 的第一個 abstraction 單位就是 EventStream，利用 Events[T] 這個 core type 來做 reactive abstraction，以及以 EventSource 內建的 closure 來轉換 external event：
+
+```scala
+// Due to the original paper lacks of signature, I guess the approximate signature of this abstraction. 
+trait Events[+T] {
+  def emit[U >: T](value: T): Unit
+}
+// For adapting original source.
+class EventSource[+T](private val closure: Events[T] => Unit) extends Events[T]
+
+// For example, this is a common way to adapt with external events by register hooks in callbacks.
+val actionPerformed: Events[Action] = new EventSource[Action] { source =>
+  this.addActionListener(new ActionListener {
+    def actionPerformed(e: ActionEvent) = source emit getAction
+  })
+}
+```
+
+除此之外，他也有 Signal 上的 abstraction，也就是 FRP 中的 Behavior:
+
+```scala
+trait Signal[+T] {
+  def apply(): T
+  def now: T
+}
+
+// Var is an instance of signal.
+class Var[A](init: A) extends Signal[A] {
+  def update(newValue: A): Unit = ...
+}
+```
 
 # TL;DR
 
@@ -289,6 +280,8 @@ TODO
 
 Functional Reactive Programming 以 continuous time-varying values 和 automatically propagate value changes 來建構應用程式。
 並且提出數個 combination 的方法來組合 abstraction，而這些方法起初多以 functional programming 來建構 (higher-order function, recursive data types, etc)，因此才會有 functional 為起頭，但他**並不是**單純說 ~~functional reactive programming 為以 functional programming 的方法建構 reactive programming~~。它有非常嚴格且單純的定義和特性基於：**continuous time value**。Time! Time! Time!
+
+所以嚴格來講，像 [Elm](https://elm-lang.org) [12] 這樣的設計，並不是符合 FRP 的精神所在的，因為他的 signal abstraction 主要也是基於 event-driven 的。
 
 ## Q2 - What is Reactive Programming?
 
@@ -311,3 +304,4 @@ TODO
 9. Z. Wan and P. Hudak, “Functional reactive programming from first principles,” ACM SIGPLAN Notices, vol. 35, no. 5, pp. 242–252, May 2000.
 10. https://begriffs.com/posts/2015-07-22-essence-of-frp.html
 11. A. Courtney, H. Nilsson, and J. Peterson, “The Yampa arcade,” in Proceedings of the ACM SIGPLAN workshop on Haskell - Haskell ’03, 2003.
+12. E. Czaplicki and S. Chong, “Asynchronous functional reactive programming for GUIs,” ACM SIGPLAN Notices, vol. 48, no. 6, p. 411, Jun. 2013.

@@ -1,3 +1,6 @@
 [submodule "tz70s.github.io"]
 	path = public
 	url = https://github.com/tz70s/tz70s.github.io.git
+[submodule "themes/hugo-theme-slim"]
+	path = themes/hugo-theme-slim
+	url = https://github.com/tz70s/hugo-theme-slim.git

@@ -93,14 +93,6 @@ allowing you to express a truth-valued, universally quantified (that is, will ap
 
 換言之，property tests 就是讓你去驗證你的公式 (total function)，基於隨機暴力的方法來取代 formal proof。
 
-TODO: API design。
-
-TODO: 比較一下其他 test。
-
-Example on validation:
-
-<script src="https://gist.github.com/tz70s/ec22142cff52ec510e3a19abb9b17058.js"></script>
-
 # Reference
 
 1. https://typelevel.org/blog/2019/02/06/algebraic-api-design.html

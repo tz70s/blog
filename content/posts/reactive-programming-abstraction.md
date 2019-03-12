@@ -141,8 +141,6 @@ once :: Time -> a -> Event a
 
 註：這邊的語法交叉參考了 [4][9][10]，所以會跟原始論文有些不同，最主要 align Conal Elliott 後來更新的 API 名稱。
 
-
-
 ## Lifting Operations
 
 Lifting Operations 顧名思義就是將 computation 提升到 reactive 的 context 中，簡單類比可以思考為 Optional、Either、Future、IO 等 higher-kinded types 的計算方式。舉例來說：

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-rm -rf public/*
+rm -rf tz70s.github.io/*
 hugo
-cd public
+cd tz70s.github.io
 git add .
 git commit -m "New blog post, generate statics."
 git push

@@ -231,7 +231,7 @@ color3 = red 'switcher' (predicate (time > 5) -=> blue)
 註：這邊的語法也是交叉參考了 [4][9][10]，所以會跟原始論文有些不同，最主要 align Conal Elliott 後來更新的 API 名稱。
 一些 example 是從 [9] 拿出來的。
 
-小結：記住他的動機是在 animation，後面的 Yampa [11] 等更新雖在組合方法不同，也同樣著重連續時間上的應用 (simulation, robotics)，所以是貫穿這裡面的主軸。**簡單來說，FRP 跟你我想像的 RP 是完全不同的用途！**
+小結：記住他的動機是在 animation，後面的 Yampa [11] 等更新雖在組合方法不同，也同樣著重連續時間上的應用 (simulation, robotics)，所以是貫穿這裡面的主軸。**簡單來說，FRP 跟常見的 RP 是完全不同的抽象！**
 
 # C2 - Deprecating Observer Pattern
 
@@ -272,22 +272,78 @@ class Var[A](init: A) extends Signal[A] {
 }
 ```
 
+這邊最大的差別在於 Signal 會 cache 住 latest value，並且可以以 now 來去取得，這方法差別在於這基本上是一個 side effected 的 operation (你可以設想 latest value 就是一個 mutable value)。換言之，這個 construction 在 pure fp (i.e. Haskell) 裡不常見，反而是一種 imperative language 才會有的方法。
+
+## Lifting Operations
+
+在 combinators 的部分，同樣 Scala.React 也做出了許多高階組合的方法 (i.e. map, filter, merge, etc)。
+比較特別的是在於建構 imperative data-flow 的 DSL，如下所示：
+
+```scala
+val path: Signal[Path] = Signal.flow(new Path) { self => 
+  val down = self await mouseDown
+  self() = self.previous.moveTo(down.position)
+  self.loopUntil(mouseUp) {
+    val e = self awaitNext mouseMove
+    self()= self.previous.lineTo(e.position)
+  }
+  self() = self.previous.close()
+}
+```
+
+顯而易見的這就是讓你寫出 imperative code 的方法，跟 monadic construction (do-notation in Haskell, for comprehension in Scala) 類似，但他也不是那麼嚴格的建構就是了。
+
+相對而言，Scala.React 其實模型的基礎是跟 ReactiveX 接近的，都是以解決 callback 問題為出發點，
+利用內部的 scheduling、propagation control (Scala.React 可以有 synchronous propagation 的模型) 來去建構 event processing graph，
+原始來講，其實就是 continuation monad 的一種變種 (Rx)。
+
+與 FRP 不同的點在於：有沒有基於時間的 denotational semantic。那這會帶來什麼樣的影響？
+
+考慮我們今天要 merge 兩個 event stream，在 Scala.React, ReactiveX，這個 merge 基本上是 non-determinism 的，例如: 
+
+```haskell
+A = [1]
+B = [2]
+
+A `merge` B -- can be [1, 2] or [2, 1]
+```
+
+而在 FRP 中，由於我們有時間的標記，所以 merge 是可以 referential transparent 的 (always produce exact value):
+
+```haskell
+-- From reactive-banana
+-- Event : the occurrences in time, which is isomorphic to list of maybe values. 
+-- The index of list is time step => [a] ~ Time -> a
+newtype Event a = E { unE :: [Maybe a] } deriving (Show)
+
+unionWith :: (a -> a -> a) -> Event a -> Event a -> Event a
+unionWith f (E xs) (E ys) = E $ zipWith combine xs ys
+  where
+    combine (Just x) (Just y) = Just $ f x y
+    combine (Just x) Nothing  = Just x
+    combine Nothing  (Just y) = Just y
+    combine Nothing  Nothing  = Nothing
+```
+
+這是 FRP v.s. RP 最大的差別。
+
 # TL;DR
 
 ## Q1 - What is Functional Reactive Programming?
 
 Functional Reactive Programming 以 continuous time-varying values 和 automatically propagate value changes 來建構應用程式。
-並且提出數個 combination 的方法來組合 abstraction，而這些方法起初多以 functional programming 來建構 (higher-order function, recursive data types, etc)，因此才會有 functional 為起頭，但他**並不是**單純說 ~~functional reactive programming 為以 functional programming 的方法建構 reactive programming~~。它有非常嚴格且單純的定義和特性基於：**continuous time value**。Time! Time! Time!
-
-所以嚴格來講，像 [Elm](https://elm-lang.org) [12] 這樣的設計，並不是符合 FRP 的精神所在的，因為他的 signal abstraction 主要也是基於 event-driven 的。
+並且提出數個 combination 的方法來組合 abstraction，而這些方法起初多以 functional programming 來建構 (higher-order function, recursive data types, etc)，因此才會有 functional 為起頭，但他**並不是**單純說 ~~functional reactive programming 為以 functional programming 的方法建構 reactive programming~~。它有非常嚴格且單純的定義和特性基於 time 的 **denotational semantic**。
 
 ## Q2 - What is Reactive Programming?
 
-TODO
+Reactive Programming 在這篇探討可以包涵兩個 class: Functional Reactive Programming & Plain Reactive Programming，簡單分類在於語意是否是基於 Time。
 
-## Q3 - Reactive Programming v.s. Stream Processing?
+兩者皆是可以解決傳統以 callback 為主的 event-driven programming 以 declarative 的方法來組合，建構一個 event processing network。
+然而，這個 network 是否需要精確的 event ordering guarantee 為他們兩者產出的最大差別。
+因此，在判斷這裡的技術選型時，可以思考一下應用 domain 是否需要有這種保證。
 
-TODO
+General 來講，我認為 FRP 的方法絕對是值得探索的，雖然相較複雜，但是正規的方法帶來更強大的效果。然而，多數實現容易造成 time leak & space leak 的問題，
+目前仍在持續發展中就是了。
 
 # References
 

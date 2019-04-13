@@ -59,7 +59,10 @@ commutative property 在 concurrent / distributed system 裡非常重要 (i.e. C
 ```haskell
 -- An infinite set on a + a Nothing element.
 -- { Nothing, Just 1, Just 2, ... }
-data Maybe a = Just a | Nothing deriving (Eq, Show)
+data Maybe a
+  = Just a
+  | Nothing
+  deriving (Eq, Show)
 
 -- As you wish, a '<>' operator.
 instance Semigroup a => Semigroup (Maybe a) where
@@ -73,8 +76,6 @@ instance Semigroup a => Semigroup (Maybe a) where
 換位思考一下，在 domain modeling 時，我們同樣會有 entity / value object (type) 及行為 (operators) [1][2]，所以我們也可以自己定義要遵守的 axiom!
 這就是 algebraic design 的本質。
 
-TODO: 補個例子。
-
 引述[一段話](http://dev.stephendiehl.com/hask/#eightfold-path-to-monad-satori)：
 
 > The only path to understanding monads is to read the fine source, fire up GHC, and write some code. Analogies and metaphors will not lead to understanding.
@@ -83,15 +84,19 @@ TODO: 補個例子。
 
 # Prove Your Laws!
 
-Property(-based) testing (性質測試) 在 Scala 偏好 typelevel 的使用者中一般來說不會陌生 (ScalaCheck)，但我一直沒有去用過就是了，
-雖然有 Functional Programming in Scala 裡有專門一個章節在講這個。
-
-在這我以 property(-based) testing 的大老爸 Haskell 裡的 QuickCheck 和 checkers。先來個定義：
+先來個定義：
 
 > Property tests test the formal properties of programs without requiring formal proofs by 
 allowing you to express a truth-valued, universally quantified (that is, will apply to all cases) function.
 
 換言之，property tests 就是讓你去驗證你的公式 (total function)，基於隨機暴力的方法來取代 formal proof。
+
+Property(-based) testing 的大老爸 Haskell 裡最常用的就是 QuickCheck:
+
+```haskell
+> :t quickCheck
+quickCheck :: Testable prop => prop -> IO ()
+```
 
 # Reference
 

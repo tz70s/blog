@@ -6,9 +6,10 @@ theme = "hugo-theme-slim"
   Subtitle = "Hacking distributed systems."
   GithubID = "tz70s"
   TwitterID = "tz70s"
+  LinkedInID = "tzu-chiao-yeh-193697103"
   DisqusShortname = "Tzu-Chiao Yeh"
   Summary = true
   Content = false
-  FooterMsg = "me :: Tzu-Chiao Yeh @tz70s => su3g4284zo6y7@gmail.com"
+  FooterMsg = "Tzu-Chiao Yeh { @tz70s, su3g4284zo6y7@gmail.com }"
   syntaxHighlighter = "highlight.js"
   customCSS = ["https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/solarized-light.min.css"]

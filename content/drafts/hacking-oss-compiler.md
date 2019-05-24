@@ -1,7 +1,7 @@
 +++
-title = "Hacking a Small Size OSS Compiler"
+title = "Hacking a Moderate Size OSS Compiler"
 date = "2019-05-14"
-slug = "hacking-small-size-oss-compiler" 
+slug = "hacking-moderate-size-oss-compiler" 
 tags = []
 categories = []
 +++
@@ -36,7 +36,7 @@ For some advanced knowledge, I'll link them when we reach out.
 
 PureScript is a language transpiled into Javascript for web frontend (almost) programming.
 The syntax is similar to Haskell as well as the powerful type system,
-including typeclasses, higher kinded types, higher rank polymorphism, 
+including type classes, higher kinded types, higher rank polymorphism, 
 and row polymorphism and extensible records, etc.
 At the first glance, it wires up rich features here,
 however, the purescript compiler is well engineered and relative **small**!
@@ -109,3 +109,11 @@ The important directory in the main repository:
 * **tests**: unit and integration tests.
 
 You can also dive into the makefile for common utilities for faster development (i.e. ghcid).
+
+# The Core Data Structure
+
+To understand a compiler, getting familiar the core data structure is often a good idea.
+The core data structure of compiler is an abstract syntax tree,
+which represented syntactic structure of a program deriving from context-free grammar.
+In the frontend of compilers, we will mostly manipulates AST for semantic analysis,
+including to scope analysis, type inference and checking and code generation.

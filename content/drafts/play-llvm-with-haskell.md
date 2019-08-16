@@ -68,3 +68,8 @@ data Op = Plus | Minus | Mult | Divide deriving (Eq, Ord, Show)
 
 # LLVM
 
+# llvm-hs(-pure) Core Types
+
+```haskell
+newtype IRBuilderT
+```

@@ -10,7 +10,7 @@ categories = []
 
 # Hadoop
 
-Homebrew 
+Homebrew 安裝 hadoop 起來我覺得蠻 stable 的，版本也沒問題，以本地開發來講算足夠了。
 
 以 brew 安裝後，會有安裝的 location 和方便使用的 script (`start-all.sh`) 的位置是需要 tuning 的，基本上設定為 [Pseudo Distributed](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SingleCluster.html) 的模式。
 

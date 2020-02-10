@@ -15,3 +15,6 @@ The maintenance guideline for these resources is keeping it to be small, concise
 * [COS 418 - Lamport Clock](https://www.cs.princeton.edu/courses/archive/fall19/cos418/docs/L4-time.pdf)
 * [COS 418 - Vector Clock](https://www.cs.princeton.edu/courses/archive/fall19/cos418/docs/L5-vc.pdf)
 
+## Consistency Models
+
+* [Consistency](https://jepsen.io/consistency)

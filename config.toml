@@ -1,9 +1,9 @@
-baseurl = "https://tz70s.github.io/"
+baseurl = "http://localhost:1313/"
 title = "tz70s"
 theme = "hugo-theme-slim"
 
 [params]
-  Subtitle = "Hacking distributed systems."
+  Subtitle = "Distributed Systems, Databases and APIs."
   GithubID = "tz70s"
   TwitterID = "tz70s"
   LinkedInID = "tzu-chiao-yeh-193697103"
@@ -13,6 +13,5 @@ theme = "hugo-theme-slim"
   Content = false
   FooterMsg = "Tzu-Chiao Yeh { @tz70s, su3g4284zo6y7@gmail.com }"
   syntaxHighlighter = "highlight.js"
-  customCSS = ["https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/solarized-light.min.css"]
+  customCSS = ["https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/xcode.min.css"]
   mainSections = ["posts"]
-

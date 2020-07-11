@@ -3,7 +3,7 @@ title = "tz70s"
 theme = "hugo-theme-slim"
 
 [params]
-  Subtitle = "Distributed Systems, Databases and APIs."
+  Subtitle = "About distributed system, programming and system level stuff."
   GithubID = "tz70s"
   TwitterID = "tz70s"
   LinkedInID = "tzu-chiao-yeh-193697103"
@@ -13,5 +13,15 @@ theme = "hugo-theme-slim"
   Content = false
   FooterMsg = "Tzu-Chiao Yeh { @tz70s, su3g4284zo6y7@gmail.com }"
   syntaxHighlighter = "highlight.js"
-  customCSS = ["https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/xcode.min.css"]
   mainSections = ["posts"]
+
+[markup]
+  [markup.highlight]
+    codeFences = false
+    guessSyntax = false
+    hl_Lines = ""
+    lineNoStart = 1
+    lineNos = false
+    lineNumbersInTable = true
+    noClasses = true
+    tabWidth = 4
